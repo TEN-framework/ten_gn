@@ -1,0 +1,86 @@
+#
+# This file is part of the TEN Framework project.
+# See https://github.com/TEN-framework/ten_framework/LICENSE for license
+# information.
+#
+default_libs = [
+  "advapi32.lib",
+  "comdlg32.lib",
+  "dbghelp.lib",
+  "dnsapi.lib",
+  "gdi32.lib",
+  "msimg32.lib",
+  "odbc32.lib",
+  "odbccp32.lib",
+  "oleaut32.lib",
+  "psapi.lib",
+  "shell32.lib",
+  "shlwapi.lib",
+  "user32.lib",
+  "usp10.lib",
+  "uuid.lib",
+  "version.lib",
+  "wininet.lib",
+  "winmm.lib",
+  "winspool.lib",
+  "ws2_32.lib",
+  "oldnames.lib",
+  "userenv.lib",
+  "ntdll.lib",
+  "synchronization.lib",
+]
+
+declare_args() {
+  use_static_crt = true
+}
+
+config("debug") {
+  defines = [ "_DEBUG" ]
+  cflags_cc = []
+  cflags = []
+
+  if (host_os == "win") {
+    ldflags = [
+      "/DEBUG",
+      "/ignore:4098",
+    ]
+  }
+  libs = default_libs
+  libs += [
+    "msvcrtd.lib",
+    "ucrtd.lib",
+    "vcruntimed.lib",
+  ]
+
+  if (use_static_crt) {
+    cflags += [ "/MTd" ]
+  } else {
+    cflags += [ "/MDd" ]
+  }
+}
+
+config("release") {
+  defines = [ "NDEBUG" ]
+  cflags_cc = []
+  cflags = []
+
+  # Linker symbols for backtraces only.
+  if (host_os == "win") {
+    ldflags = [
+      "/DEBUG",
+      "/ignore:4098",
+    ]
+  }
+  libs = default_libs
+  libs += [
+    "msvcrt.lib",
+    "ucrt.lib",
+    "vcruntime.lib",
+  ]
+
+  if (use_static_crt) {
+    cflags += [ "/MT" ]
+  } else {
+    cflags += [ "/MD" ]
+  }
+}

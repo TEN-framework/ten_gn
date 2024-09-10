@@ -1,0 +1,22 @@
+#
+# This file is part of the TEN Framework project.
+# See https://github.com/TEN-framework/ten_framework/LICENSE for license
+# information.
+#
+declare_args() {
+  linux_clang_stdlib = "c++"
+
+  # In Linux, the default C++ standard library is libstdc++. However, when using
+  # Clang, TEN switches to Clang's libc++. To avoid conflicts with libstdc++
+  # that might be used in other binaries, we statically link libc++ into TEN's
+  # binaries.
+  linux_stl_static = is_clang
+
+  # gcc uses dynamic asan library by default, and clang uses static linking by
+  # default. So we follow the convention.
+  liunx_asan_static_linking = is_clang
+}
+
+declare_args() {
+  arm_float_abi = ""
+}

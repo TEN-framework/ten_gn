@@ -1,0 +1,21 @@
+#
+# This file is part of the TEN Framework project.
+# See https://github.com/TEN-framework/ten_framework/LICENSE for license
+# information.
+#
+xcode_target_sdk = ""
+xcode_target_platform = ""
+
+assert(is_mac)
+
+if (is_mac) {
+  if (target_cpu == "x64") {
+    xcode_target_sdk = "macosx"
+    xcode_target_platform = "x86_64-apple-macosx10.9"
+  } else if (target_cpu == "arm64") {
+    xcode_target_sdk = "macosx"
+    xcode_target_platform = "arm64-apple-macosx10.9"
+  } else {
+    assert(false, "Not support")
+  }
+}

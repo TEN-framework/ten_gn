@@ -1,0 +1,21 @@
+#
+# This file is part of the TEN Framework project.
+# See https://github.com/TEN-framework/ten_framework/LICENSE for license
+# information.
+#
+config("debug") {
+  defines = [ "_DEBUG" ]
+  cflags = [ "-g" ]
+  ldflags = [ "-rdynamic" ]
+}
+
+config("release") {
+  defines = [ "NDEBUG" ]
+  cflags = [ "-O3" ]
+
+  # TODO(Wei): Remove this in the future. Currently, because we want to have
+  # more information in the release build, such as the backtrace, so enable
+  # '-g' in the release build. If we have more confidence about the release
+  # build quality, we have to disable '-g' in the release build.
+  cflags += [ "-g" ]
+}

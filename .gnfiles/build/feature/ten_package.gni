@@ -1,0 +1,355 @@
+#
+# This file is part of the TEN Framework project.
+# See https://github.com/TEN-framework/ten_framework/LICENSE for license
+# information.
+#
+import("//.gnfiles/build/feature/base_options.gni")
+
+template("ten_package") {
+  _target_name = target_name
+
+  package_output_root_dir_name = _target_name
+  if (defined(invoker.package_output_root_dir_name) &&
+      invoker.package_output_root_dir_name != "") {
+    package_output_root_dir_name = invoker.package_output_root_dir_name
+  }
+
+  # Determine the package_output_root_dir of the TEN package.
+  #
+  # The main purpose of this is to quickly find the desired package in the out
+  # folder without making the out folder too cluttered. And different types of
+  # packages can have the same name, so splitting subfolders based on type to
+  # create a namespace-like effect is also relatively appropriate.
+  if (invoker.package_kind == "app") {
+    package_output_root_dir =
+        "${root_out_dir}/app/${package_output_root_dir_name}"
+  } else if (invoker.package_kind == "protocol") {
+    package_output_root_dir =
+        "${root_out_dir}/ten_packages/protocol/${package_output_root_dir_name}"
+  } else if (invoker.package_kind == "extension") {
+    package_output_root_dir =
+        "${root_out_dir}/ten_packages/extension/${package_output_root_dir_name}"
+  } else if (invoker.package_kind == "extension_group") {
+    package_output_root_dir = "${root_out_dir}/ten_packages/extension_group/${package_output_root_dir_name}"
+  } else if (invoker.package_kind == "system") {
+    package_output_root_dir =
+        "${root_out_dir}/ten_packages/system/${package_output_root_dir_name}"
+  } else if (invoker.package_kind == "custom") {
+    package_output_root_dir = "${root_out_dir}/${package_output_root_dir_name}"
+  }
+
+  # Specify the necessary steps which are used in group("<target_name>") in the
+  # end.
+  package_deps = []
+
+  # Check if we need to build the package.
+  if (defined(invoker.enable_build) && invoker.enable_build == true) {
+    if (invoker.package_kind == "app") {
+      build_type = "executable"
+    } else if (invoker.package_kind == "protocol" ||
+               invoker.package_kind == "extension" ||
+               invoker.package_kind == "extension_group" ||
+               invoker.package_kind == "system") {
+      build_type = "shared_library"
+    }
+
+    output_name = _target_name
+    if (defined(invoker.output_name) && invoker.output_name != "") {
+      output_name = invoker.output_name
+    }
+
+    build_target_name = "${_target_name}_${build_type}"
+
+    target(build_type, build_target_name) {
+      if (build_type == "shared_library") {
+        output_dir = "${package_output_root_dir}/lib"
+      } else {
+        output_dir = "${package_output_root_dir}/bin"
+      }
+
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "public_deps",
+                               "data_deps",
+                             ])
+
+      sources = []
+      if (defined(invoker.sources) && invoker.sources != []) {
+        sources += invoker.sources
+      }
+      if (defined(invoker.configs) && invoker.configs != []) {
+        configs += invoker.configs
+      }
+      defines = common_defines
+      if (defined(invoker.defines) && invoker.defines != []) {
+        defines += invoker.defines
+      }
+      include_dirs = common_includes
+      if (defined(invoker.include_dirs) && invoker.include_dirs != []) {
+        include_dirs += invoker.include_dirs
+      }
+      cflags = common_cflags
+      if (defined(invoker.cflags) && invoker.cflags != []) {
+        cflags += invoker.cflags
+      }
+      cflags_c = common_cflags_c
+      if (defined(invoker.cflags_c) && invoker.cflags_c != []) {
+        cflags_c += invoker.cflags_c
+      }
+      cflags_cc = common_cflags_cc
+      if (defined(invoker.cflags_cc) && invoker.cflags_cc != []) {
+        cflags_cc += invoker.cflags_cc
+      }
+      cflags_objc = common_cflags_objc
+      if (defined(invoker.cflags_objc) && invoker.cflags_objc != []) {
+        cflags_objc += invoker.cflags_objc
+      }
+      cflags_objcc = common_cflags_objcc
+      if (defined(invoker.cflags_objcc) && invoker.cflags_objcc != []) {
+        cflags_objcc += invoker.cflags_objcc
+      }
+      libs = common_libs
+      if (defined(invoker.libs) && invoker.libs != []) {
+        libs += invoker.libs
+      }
+      lib_dirs = common_lib_dirs
+      if (defined(invoker.lib_dirs) && invoker.lib_dirs != []) {
+        lib_dirs += invoker.lib_dirs
+      }
+      ldflags = common_ldflags
+      if (defined(invoker.ldflags) && invoker.ldflags != []) {
+        ldflags += invoker.ldflags
+      }
+
+      if (is_linux) {
+        ldflags += [
+          # Enable the binary to look in the same folder for shared libraries.
+          "-Wl,-rpath=\$ORIGIN",
+
+          # Enable the binary to look in '<parent_folder>/lib/' for shared
+          # libraries.
+          "-Wl,-rpath=\$ORIGIN/../lib/",
+        ]
+      } else if (is_mac) {
+        ldflags += [
+          # Enable the binary to look in the same folder for shared libraries.
+          "-Wl,-rpath,@loader_path",
+
+          # Enable the binary to look in '<parent_folder>/lib/' for shared
+          # libraries.
+          "-Wl,-rpath,@loader_path/../lib/",
+
+          "-Xlinker",
+          "-install_name",
+          "-Xlinker",
+          "@rpath/lib${_target_name}.dylib",
+        ]
+      }
+
+      # Setup relevant variables for the installed system package.
+      if (invoker.package_kind == "app") {
+        app_base_dir = get_path_info(_target_name, "dir")
+
+        used_system_pkgs =
+            exec_script("//.gnfiles/build/scripts/get_used_ten_pkgs.py",
+                        [
+                          "--pkg-base-dir",
+                          rebase_path("${app_base_dir}"),
+                          "--app-base-dir",
+                          rebase_path("${app_base_dir}"),
+                          "--pkg-type",
+                          "system",
+                        ],
+                        "list lines")
+        foreach(used_pkg, used_system_pkgs) {
+          configs += [ "${used_pkg}:config_for_app" ]
+        }
+      } else {
+        pkg_base_dir = get_path_info(_target_name, "dir")
+        app_base_dir = "${pkg_base_dir}/../../../"
+
+        used_system_pkgs =
+            exec_script("//.gnfiles/build/scripts/get_used_ten_pkgs.py",
+                        [
+                          "--pkg-base-dir",
+                          rebase_path("${pkg_base_dir}"),
+                          "--app-base-dir",
+                          rebase_path("${app_base_dir}"),
+                          "--pkg-type",
+                          "system",
+                        ],
+                        "list lines")
+        foreach(used_pkg, used_system_pkgs) {
+          configs += [ "${app_base_dir}${used_pkg}:config_for_ten_packages" ]
+        }
+
+        app_base_dir = "${pkg_base_dir}/.ten/app/"
+
+        used_system_pkgs = []
+        used_system_pkgs =
+            exec_script("//.gnfiles/build/scripts/get_used_ten_pkgs.py",
+                        [
+                          "--pkg-base-dir",
+                          rebase_path("${pkg_base_dir}"),
+                          "--app-base-dir",
+                          rebase_path("${app_base_dir}"),
+                          "--pkg-type",
+                          "system",
+                        ],
+                        "list lines")
+        foreach(used_pkg, used_system_pkgs) {
+          configs += [
+            "${app_base_dir}${used_pkg}:config_for_standalone_ten_packages",
+          ]
+        }
+      }
+    }
+
+    package_deps += [ ":${build_target_name}" ]
+  }
+
+  # Handle resources
+  #
+  # The destination folder of 'resources' is <package_output_root_dir>.
+  if (defined(invoker.resources) && invoker.resources != []) {
+    resource_targets = []
+
+    foreach(resource, invoker.resources) {
+      resource_info = {
+      }
+      resource_info =
+          exec_script("//.gnfiles/build/scripts/get_src_and_dest_file.py",
+                      [
+                        "--input-string",
+                        "${resource}",
+                        "--delimiter",
+                        "=>",
+                        "--delimiter",
+                        "|",
+                      ],
+                      "json")
+
+      resource_src_paths = []
+      resource_src_paths = resource_info.sources
+      resource_dest_path = resource_info.destination
+
+      resource_dest_filename = string_replace(resource_dest_path, "/", "_")
+
+      resource_action_target =
+          "${_target_name}_resource_${resource_dest_filename}"
+
+      action("${resource_action_target}") {
+        script = "//.gnfiles/build/scripts/copy_fs_entry.py"
+
+        inputs = resource_src_paths
+        outputs = [ "${package_output_root_dir}/${resource_dest_path}" ]
+
+        args = []
+        foreach(resource_src_path, resource_src_paths) {
+          args += [
+            "--source",
+            rebase_path(resource_src_path),
+          ]
+        }
+        args += [
+          "--destination",
+          rebase_path("${package_output_root_dir}/${resource_dest_path}"),
+        ]
+
+        forward_variables_from(invoker,
+                               [
+                                 "deps",
+                                 "public_deps",
+                                 "data_deps",
+                               ])
+      }
+
+      resource_targets += [ ":${resource_action_target}" ]
+      package_deps += [ ":${resource_action_target}" ]
+    }
+  }
+
+  # Build the installed buildable addons in TEN app, and copy it to the out
+  # folder.
+  #
+  # If we are compiling a TEN app, the behavior includes not only compiling the
+  # app itself but also compiling the installed buildable addons within the app.
+  # Specifically, if an addon contains a BUILD.gn file (indicating that it is a
+  # C++ addon), it will be compiled together with the app.
+  #
+  # In other words, a C++ addon can be built standalone or compiled as part of
+  # an app. The BUILD.gn file for a C++ addon is specifically adapted for these
+  # two scenarios.
+  if (invoker.package_kind == "app") {
+    app_base_dir = rebase_path(get_path_info(_target_name, "dir"))
+
+    installed_buildable_addons =
+        exec_script("//.gnfiles/build/scripts/get_used_ten_pkgs.py",
+                    [
+                      "--pkg-base-dir",
+                      "${app_base_dir}",
+                      "--app-base-dir",
+                      "${app_base_dir}",
+                      "--pkg-type",
+                      "extension",
+                      "--pkg-type",
+                      "extension_group",
+                      "--pkg-type",
+                      "protocol",
+                      "--pkg-type",
+                      "system",
+                    ],
+                    "list lines")
+
+    foreach(installed_buildable_addon, installed_buildable_addons) {
+      installed_buildable_addon_target_str =
+          string_replace(installed_buildable_addon, "/", "_")
+
+      installed_buildable_addon_action_target = "${_target_name}_copy_build_result_of_${installed_buildable_addon_target_str}"
+
+      action(installed_buildable_addon_action_target) {
+        script = "//.gnfiles/build/scripts/copy_fs_entry.py"
+
+        args = [
+          "--source",
+          rebase_path("${root_out_dir}/${installed_buildable_addon}"),
+          "--destination",
+          rebase_path(
+              "${package_output_root_dir}/${installed_buildable_addon}"),
+        ]
+
+        outputs = [ "${package_output_root_dir}/${installed_buildable_addon}" ]
+
+        forward_variables_from(invoker,
+                               [
+                                 "deps",
+                                 "public_deps",
+                                 "data_deps",
+                               ])
+
+        # The addition of the following deps will cause the app's building
+        # process to also build the installed and buildable C++ addons.
+        deps = [ "${installed_buildable_addon}" ]
+      }
+
+      package_deps += [ ":${installed_buildable_addon_action_target}" ]
+    }
+  }
+
+  group(_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "public_deps",
+                             "data_deps",
+                             "public_configs",
+                           ])
+
+    if (defined(public_deps)) {
+      public_deps += package_deps
+    } else {
+      public_deps = package_deps
+    }
+  }
+}

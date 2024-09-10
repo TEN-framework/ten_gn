@@ -1,0 +1,12 @@
+#
+# This file is part of the TEN Framework project.
+# See https://github.com/TEN-framework/ten_framework/LICENSE for license
+# information.
+#
+pool("link_pool") {
+  depth = 1
+}
+
+pool("action_pool") {
+  depth = exec_script("//.gnfiles/build/scripts/get_cpu_count.py", [], "value")
+}
