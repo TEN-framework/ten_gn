@@ -84,25 +84,25 @@ def determine_essential_paths(all_args: AllArgumentInfo) -> None:
 
     if sys.platform == "win32":
         all_args.gn_path = os.path.join(all_args.gn_path, "win", "gn.exe")
-        all_args.ninja_path = os.path.join(
-            all_args.ninja_path, "win", "ninja.exe"
-        )
+        all_args.ninja_path = os.path.join(all_args.ninja_path, "win", "ninja.exe")
     elif sys.platform == "darwin":
         all_args.gn_path = os.path.join(all_args.gn_path, "mac", "gn")
         all_args.ninja_path = os.path.join(all_args.ninja_path, "mac", "ninja")
     else:
-        all_args.gn_path = os.path.join(all_args.gn_path, "linux", "gn")
-        all_args.ninja_path = os.path.join(
-            all_args.ninja_path, "linux", "ninja"
-        )
+        if os.uname().machine in ["arm64", "aarch64"]:
+            all_args.gn_path = os.path.join(all_args.gn_path, "linux", "arm64", "gn")
+            all_args.ninja_path = os.path.join(
+                all_args.ninja_path, "linux", "arm64", "ninja"
+            )
+        else:
+            all_args.gn_path = os.path.join(all_args.gn_path, "linux", "gn")
+            all_args.ninja_path = os.path.join(all_args.ninja_path, "linux", "ninja")
 
     # 'gn_path' is the path of the 'gn' executable.
     all_args.gn_path = os.path.abspath(all_args.gn_path).replace("\\", "/")
 
     # 'ninja_path' is the path of the 'ninja' executable.
-    all_args.ninja_path = os.path.abspath(all_args.ninja_path).replace(
-        "\\", "/"
-    )
+    all_args.ninja_path = os.path.abspath(all_args.ninja_path).replace("\\", "/")
 
 
 def check_python_version() -> None:
@@ -110,8 +110,7 @@ def check_python_version() -> None:
 
     if sys.version_info.major < 3:
         err_msg = (
-            f"Your python version is {sys.version_info},"
-            " please change to python3."
+            f"Your python version is {sys.version_info}," " please change to python3."
         )
         print(err_msg)
         sys.exit(-1)
@@ -241,21 +240,15 @@ def validate_cpu(target_cpu: str, target_os: str) -> None:
     }
 
     if target_os not in valid_os_cpu_mapping:
-        print(
-            f"\n Can not build arch with name {target_cpu} in OS {target_os}\n"
-        )
+        print(f"\n Can not build arch with name {target_cpu} in OS {target_os}\n")
         exit(-1)
 
     if target_cpu not in valid_os_cpu_mapping[target_os]:
-        print(
-            f"\n Can not build arch with name {target_cpu} in OS {target_os}\n"
-        )
+        print(f"\n Can not build arch with name {target_cpu} in OS {target_os}\n")
         exit(-1)
 
 
-def parse_main_args(
-    all_args: AllArgumentInfo, main_args_list: list[str]
-) -> None:
+def parse_main_args(all_args: AllArgumentInfo, main_args_list: list[str]) -> None:
     """Analyze the command line arguments after the 'tgn' command.
 
     For example, 'tgn -h' will analyze '-h'.
@@ -363,9 +356,7 @@ def get_generator(main_args: AllArgumentInfo) -> str:
     return generator
 
 
-def write_gn_args(
-    all_args: AllArgumentInfo, project_configs: List[str]
-) -> None:
+def write_gn_args(all_args: AllArgumentInfo, project_configs: List[str]) -> None:
     """Writes GN arguments to a file named 'args.gn'.
 
     This 'args.gn' file would be in the 'out/' folder.
@@ -410,9 +401,7 @@ def prepare_gn_files(all_args: AllArgumentInfo) -> None:
 
     dot_file: str = os.path.abspath(".gn")
     build_file: str = os.path.abspath(".gnfiles")
-    default_dot_file: str = os.path.abspath(
-        os.path.join(all_args.script_path, ".gn")
-    )
+    default_dot_file: str = os.path.abspath(os.path.join(all_args.script_path, ".gn"))
     default_build_file: str = os.path.abspath(all_args.script_path)
 
     # If the symlink already exists, there's nothing to do.
@@ -506,9 +495,7 @@ def generate_solution(all_args: AllArgumentInfo) -> None:
     prepare_gn_files(all_args)
     all_args.generator = get_generator(all_args)
 
-    ide_arg = (
-        f"--ide={all_args.generator}" if len(all_args.generator) != 0 else ""
-    )
+    ide_arg = f"--ide={all_args.generator}" if len(all_args.generator) != 0 else ""
     ide_flag = ""
     generator_target = ""
 
@@ -614,9 +601,7 @@ def show_path(all_args: AllArgumentInfo) -> None:
         src_label = all_args.build_target[0:separator]
         dest_label = all_args.build_target[(separator + 1) :]
     else:
-        raise Exception(
-            "'path' command needs a source label and a destination label."
-        )
+        raise Exception("'path' command needs a source label and a destination label.")
 
     cmd = "{0} path --all {1} {2} {3}".format(
         all_args.gn_path,
