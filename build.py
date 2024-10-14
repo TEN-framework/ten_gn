@@ -91,10 +91,20 @@ def determine_essential_paths(all_args: AllArgumentInfo) -> None:
         all_args.gn_path = os.path.join(all_args.gn_path, "mac", "gn")
         all_args.ninja_path = os.path.join(all_args.ninja_path, "mac", "ninja")
     else:
-        all_args.gn_path = os.path.join(all_args.gn_path, "linux", "gn")
-        all_args.ninja_path = os.path.join(
-            all_args.ninja_path, "linux", "ninja"
-        )
+        if os.uname().machine in ["arm64", "aarch64"]:
+            all_args.gn_path = os.path.join(
+                all_args.gn_path, "linux", "arm64", "gn"
+            )
+            all_args.ninja_path = os.path.join(
+                all_args.ninja_path, "linux", "arm64", "ninja"
+            )
+        else:
+            all_args.gn_path = os.path.join(
+                all_args.gn_path, "linux", "x64", "gn"
+            )
+            all_args.ninja_path = os.path.join(
+                all_args.ninja_path, "linux", "x64", "ninja"
+            )
 
     # 'gn_path' is the path of the 'gn' executable.
     all_args.gn_path = os.path.abspath(all_args.gn_path).replace("\\", "/")

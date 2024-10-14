@@ -86,7 +86,11 @@ config("specific_cpp") {
   if (is_clang) {
     if (linux_clang_stdlib == "c++") {
       if (linux_stl_static) {
-        libs += [ "/usr/lib/x86_64-linux-gnu/libc++.a" ]
+        if (target_cpu == "arm64") {
+          libs += [ "/usr/lib/aarch64-linux-gnu/libc++.a" ]
+        } else {
+          libs += [ "/usr/lib/x86_64-linux-gnu/libc++.a" ]
+        }
       } else {
         libs += [ "c++" ]
       }
@@ -97,7 +101,13 @@ config("specific_cpp") {
                         [ "gcc" ],
                         "value")
         assert(_gcc_version == 0 || _gcc_version != 0)
-        libs += [ "/usr/lib/gcc/x86_64-linux-gnu/${_gcc_version}/libstdc++.a" ]
+        if (target_cpu == "arm64") {
+          libs +=
+              [ "/usr/lib/gcc/aarch64-linux-gnu/${_gcc_version}/libstdc++.a" ]
+        } else {
+          libs +=
+              [ "/usr/lib/gcc/x86_64-linux-gnu/${_gcc_version}/libstdc++.a" ]
+        }
       } else {
         libs += [ "stdc++" ]
       }
@@ -110,7 +120,11 @@ config("specific_cpp") {
                                  [ "gcc" ],
                                  "value")
       assert(_gcc_version == 0 || _gcc_version != 0)
-      libs += [ "/usr/lib/gcc/x86_64-linux-gnu/${_gcc_version}/libstdc++.a" ]
+      if (target_cpu == "arm64") {
+        libs += [ "/usr/lib/gcc/aarch64-linux-gnu/${_gcc_version}/libstdc++.a" ]
+      } else {
+        libs += [ "/usr/lib/gcc/x86_64-linux-gnu/${_gcc_version}/libstdc++.a" ]
+      }
     } else {
       libs += [ "stdc++" ]
     }
