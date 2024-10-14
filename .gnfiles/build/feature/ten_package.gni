@@ -298,8 +298,6 @@ template("ten_package") {
                       "extension_group",
                       "--pkg-type",
                       "protocol",
-                      "--pkg-type",
-                      "system",
                     ],
                     "list lines")
 
