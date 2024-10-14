@@ -102,9 +102,11 @@ config("specific_cpp") {
                         "value")
         assert(_gcc_version == 0 || _gcc_version != 0)
         if (target_cpu == "arm64") {
-          libs += [ "/usr/lib/gcc/aarch64-linux-gnu/${_gcc_version}/libstdc++.a" ]
+          libs +=
+              [ "/usr/lib/gcc/aarch64-linux-gnu/${_gcc_version}/libstdc++.a" ]
         } else {
-          libs += [ "/usr/lib/gcc/x86_64-linux-gnu/${_gcc_version}/libstdc++.a" ]
+          libs +=
+              [ "/usr/lib/gcc/x86_64-linux-gnu/${_gcc_version}/libstdc++.a" ]
         }
       } else {
         libs += [ "stdc++" ]
