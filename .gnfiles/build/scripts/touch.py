@@ -9,6 +9,10 @@ import os
 
 
 def touch(path):
+    parent_dir = os.path.dirname(path)
+    if parent_dir and not os.path.exists(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
+
     with open(path, "a"):
         try:
             os.utime(path, follow_symlinks=False)
