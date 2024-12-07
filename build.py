@@ -180,6 +180,17 @@ def run_not_die(cmd: str, show_output: bool = True, echo: bool = False) -> None:
     run_cmd(cmd, show_output, echo)
 
 
+def run_and_redirect_output(cmd: str, output_file: str) -> None:
+    """Run a command and redirect its output to a file.
+
+    Args:
+        cmd: The command to run.
+        output_file: The file to which to redirect the output.
+    """
+    with open(output_file, "w") as f:
+        subprocess.run(cmd, shell=True, stdout=f, stderr=f)
+
+
 def get_cmd_output(cmd: str, echo: bool = False) -> Tuple[int, str]:
     """Executes cmd in a shell and returns its status and output.
 
@@ -401,6 +412,16 @@ def write_gn_args(
             f.write(str(arg).replace("#", '"') + "\n")
 
 
+def dump_gn_args(all_args: AllArgumentInfo) -> None:
+    tgn_args_file = os.path.join(os.getcwd(), all_args.out_dir, "tgn_args.txt")
+
+    cmd = "{0} args --list {1} --short".format(
+        all_args.gn_path,
+        all_args.out_dir,
+    )
+    run_and_redirect_output(cmd, tgn_args_file)
+
+
 def prepare_gn_args(all_args: AllArgumentInfo) -> None:
     """Prepares GN arguments by reading a PROJECTCONFIG.gn file."""
 
@@ -549,6 +570,8 @@ def generate_solution(all_args: AllArgumentInfo) -> None:
             os.path.join(all_args.out_dir, "compile_commands.json"),
             os.path.join(os.getcwd(), "compile_commands.json"),
         )
+
+    dump_gn_args(all_args)
 
 
 def generate_dep_graph(all_args: AllArgumentInfo):
