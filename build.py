@@ -413,13 +413,13 @@ def write_gn_args(
 
 
 def dump_gn_args(all_args: AllArgumentInfo) -> None:
-    ten_args_gn = os.path.join(os.getcwd(), all_args.out_dir, "ten_args.gn")
+    tgn_args_file = os.path.join(os.getcwd(), all_args.out_dir, "tgn_args.txt")
 
     cmd = "{0} args --list {1} --short".format(
         all_args.gn_path,
         all_args.out_dir,
     )
-    run_and_redirect_output(cmd, ten_args_gn)
+    run_and_redirect_output(cmd, tgn_args_file)
 
 
 def prepare_gn_args(all_args: AllArgumentInfo) -> None:
