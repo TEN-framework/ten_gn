@@ -44,19 +44,21 @@ def get_cmd_output(cmd: str, log_level: int = 0) -> tuple[int, str]:
     if log_level > 1:
         print(f"> {cmd}")
 
-    pipe = os.popen(cmd + " 2>&1", "r")
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
     output_text = ""
 
-    while 1:
-        line = pipe.readline()
-        if not line:
-            break
-        output_text += line
+    # Read all output at once.
+    output_text, _ = process.communicate()
 
-    try:
-        returncode = pipe.close()
-    except Exception:
-        returncode = 1
+    returncode = process.returncode
 
     if returncode is None:
         returncode = 0
