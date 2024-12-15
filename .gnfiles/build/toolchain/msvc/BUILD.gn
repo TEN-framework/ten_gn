@@ -28,7 +28,6 @@ default_libs = [
   "oldnames.lib",
   "userenv.lib",
   "ntdll.lib",
-  "Shlwapi.lib",
   "synchronization.lib",
 ]
 
