@@ -110,6 +110,8 @@ def run_cmd_realtime(
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         shell=set_shell,
         bufsize=0,
         env=env,
@@ -132,10 +134,7 @@ def run_cmd_realtime(
     try:
         while child.poll() is None:
             if child.stdout:
-                try:
-                    line = child.stdout.readline()
-                except UnicodeDecodeError:
-                    line = child.stdout.readline().encode("gbk").decode("gbk")
+                line = child.stdout.readline()
 
             if line != "":
                 console_log += line
@@ -160,8 +159,6 @@ def run_cmd_realtime(
                         )
 
                     sys.stdout.flush()
-    except UnicodeDecodeError:
-        pass
     except Exception as e:
         sys.stdout.write(
             "{}{} > {}\n".format(
