@@ -44,6 +44,8 @@ def get_cmd_output(cmd: str, log_level: int = 0) -> tuple[int, str]:
     if log_level > 1:
         print(f"> {cmd}")
 
+    # Use UTF-8 encoding with the `replace` option to avoid decode errors when
+    # Python handling the `output_text`.
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -59,7 +61,6 @@ def get_cmd_output(cmd: str, log_level: int = 0) -> tuple[int, str]:
     output_text, _ = process.communicate()
 
     returncode = process.returncode
-
     if returncode is None:
         returncode = 0
 
@@ -107,6 +108,8 @@ def run_cmd_realtime(
         if sys.platform == "win32" and cmd[:3] != "cmd":
             my_cmd = "cmd /c " + cmd
 
+    # Use UTF-8 encoding with the `replace` option to avoid decode errors when
+    # Python handling the `output_text`.
     child = subprocess.Popen(
         my_cmd,
         stdout=subprocess.PIPE,
