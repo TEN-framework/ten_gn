@@ -5,17 +5,22 @@
 # Refer to the "LICENSE" file in the root directory for more information.
 #
 import sys
+import io
 import os
 import subprocess
 
 
-# psutil is not a builtin module, so use it if it exists.
+# `psutil` is not a builtin module, so use it if it exists.
 try:
     import psutil
 
     has_psutil = True
 except ImportError:
     has_psutil = False
+
+# Reconfigure stdout to use UTF-8 on Windows.
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
 def get_cmd_output(cmd: str, log_level: int = 0) -> tuple[int, str]:
