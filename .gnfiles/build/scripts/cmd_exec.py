@@ -9,7 +9,7 @@ import os
 import subprocess
 
 
-# psutil is not a builtin module, so use it if it exists.
+# `psutil` is not a builtin module, so use it if it exists.
 try:
     import psutil
 
@@ -44,20 +44,23 @@ def get_cmd_output(cmd: str, log_level: int = 0) -> tuple[int, str]:
     if log_level > 1:
         print(f"> {cmd}")
 
-    pipe = os.popen(cmd + " 2>&1", "r")
+    # Use UTF-8 encoding with the `replace` option to avoid decode errors when
+    # Python handling the `output_text`.
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
     output_text = ""
 
-    while 1:
-        line = pipe.readline()
-        if not line:
-            break
-        output_text += line
+    # Read all output at once.
+    output_text, _ = process.communicate()
 
-    try:
-        returncode = pipe.close()
-    except Exception:
-        returncode = 1
-
+    returncode = process.returncode
     if returncode is None:
         returncode = 0
 
@@ -105,11 +108,15 @@ def run_cmd_realtime(
         if sys.platform == "win32" and cmd[:3] != "cmd":
             my_cmd = "cmd /c " + cmd
 
+    # Use UTF-8 encoding with the `replace` option to avoid decode errors when
+    # Python handling the `output_text`.
     child = subprocess.Popen(
         my_cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         shell=set_shell,
         bufsize=0,
         env=env,
@@ -132,10 +139,7 @@ def run_cmd_realtime(
     try:
         while child.poll() is None:
             if child.stdout:
-                try:
-                    line = child.stdout.readline()
-                except UnicodeDecodeError:
-                    line = child.stdout.readline().encode("gbk").decode("gbk")
+                line = child.stdout.readline()
 
             if line != "":
                 console_log += line
@@ -160,8 +164,6 @@ def run_cmd_realtime(
                         )
 
                     sys.stdout.flush()
-    except UnicodeDecodeError:
-        pass
     except Exception as e:
         sys.stdout.write(
             "{}{} > {}\n".format(
