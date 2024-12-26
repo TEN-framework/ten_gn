@@ -5,19 +5,20 @@
 # Refer to the "LICENSE" file in the root directory for more information.
 #
 import os
+from typing import Optional
 from build.scripts import touch
 
 TG_TIMESTAMP_PROXY_EXTENSION = ".tg_timestamp_proxy"
 
 
-def _gen_timestamp_proxy_path(path: str | None) -> str | None:
+def _gen_timestamp_proxy_path(path: Optional[str]) -> Optional[str]:
     if path:
         return path + TG_TIMESTAMP_PROXY_EXTENSION
     else:
         return None
 
 
-def touch_timestamp_proxy_file(path: str | None) -> None:
+def touch_timestamp_proxy_file(path: Optional[str]) -> None:
     path = _gen_timestamp_proxy_path(path)
 
     if path:
@@ -27,7 +28,7 @@ def touch_timestamp_proxy_file(path: str | None) -> None:
             raise Exception(f"Failed to touch timestamp proxy file: {str(e)}")
 
 
-def remove_timestamp_proxy_file(path: str | None) -> None:
+def remove_timestamp_proxy_file(path: Optional[str]) -> None:
     path = _gen_timestamp_proxy_path(path)
 
     if path and os.path.exists(path):

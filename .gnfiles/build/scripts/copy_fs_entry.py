@@ -6,6 +6,7 @@
 #
 import os
 import argparse
+from typing import Optional
 from build.scripts import fs_utils, timestamp_proxy
 
 """ Copy from the paths of the 1st to N-1 arguments to the path of the Nth
@@ -17,7 +18,7 @@ class ArgumentInfo(argparse.Namespace):
     def __init__(self):
         self.source: list[str]
         self.destination: str
-        self.tg_timestamp_proxy_file: str | None = None
+        self.tg_timestamp_proxy_file: Optional[str] = None
 
 
 def main():
