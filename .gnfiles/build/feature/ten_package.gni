@@ -24,14 +24,12 @@ template("ten_package") {
   if (invoker.package_kind == "app") {
     package_output_root_dir =
         "${root_out_dir}/app/${package_output_root_dir_name}"
-  } else if (invoker.package_kind == "protocol") {
+  } else if (invoker.package_kind == "generic") {
     package_output_root_dir =
-        "${root_out_dir}/ten_packages/protocol/${package_output_root_dir_name}"
+        "${root_out_dir}/ten_packages/generic/${package_output_root_dir_name}"
   } else if (invoker.package_kind == "extension") {
     package_output_root_dir =
         "${root_out_dir}/ten_packages/extension/${package_output_root_dir_name}"
-  } else if (invoker.package_kind == "extension_group") {
-    package_output_root_dir = "${root_out_dir}/ten_packages/extension_group/${package_output_root_dir_name}"
   } else if (invoker.package_kind == "system") {
     package_output_root_dir =
         "${root_out_dir}/ten_packages/system/${package_output_root_dir_name}"
@@ -47,9 +45,8 @@ template("ten_package") {
   if (defined(invoker.enable_build) && invoker.enable_build == true) {
     if (invoker.package_kind == "app") {
       build_type = "executable"
-    } else if (invoker.package_kind == "protocol" ||
+    } else if (invoker.package_kind == "generic" ||
                invoker.package_kind == "extension" ||
-               invoker.package_kind == "extension_group" ||
                invoker.package_kind == "system") {
       build_type = "shared_library"
     }
@@ -159,7 +156,7 @@ template("ten_package") {
                           rebase_path("${app_base_dir}"),
                           "--app-base-dir",
                           rebase_path("${app_base_dir}"),
-                          "--pkg-type",
+                          "--pkg-namespace",
                           "system",
                         ],
                         "list lines")
@@ -177,7 +174,7 @@ template("ten_package") {
                           rebase_path("${pkg_base_dir}"),
                           "--app-base-dir",
                           rebase_path("${app_base_dir}"),
-                          "--pkg-type",
+                          "--pkg-namespace",
                           "system",
                         ],
                         "list lines")
@@ -195,7 +192,7 @@ template("ten_package") {
                           rebase_path("${pkg_base_dir}"),
                           "--app-base-dir",
                           rebase_path("${app_base_dir}"),
-                          "--pkg-type",
+                          "--pkg-namespace",
                           "system",
                         ],
                         "list lines")
@@ -292,13 +289,11 @@ template("ten_package") {
                       "${app_base_dir}",
                       "--app-base-dir",
                       "${app_base_dir}",
-                      "--pkg-type",
+                      "--pkg-namespace",
                       "extension",
-                      "--pkg-type",
-                      "extension_group",
-                      "--pkg-type",
-                      "protocol",
-                      "--pkg-type",
+                      "--pkg-namespace",
+                      "generic",
+                      "--pkg-namespace",
                       "system",
                     ],
                     "list lines")

@@ -13,10 +13,10 @@ class ArgumentInfo(argparse.Namespace):
     def __init__(self):
         self.pkg_base_dir: str
         self.app_base_dir: str
-        self.pkg_type: list[str]
+        self.pkg_namespace: list[str]
 
 
-def filter_subfolders_with_buildgn(
+def filter_folders_with_buildgn(
     base_path: str, subfolders: list[str]
 ) -> list[str]:
     folders_with_buildgn = []
@@ -41,43 +41,67 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--app-base-dir", type=str, required=True)
     parser.add_argument("--pkg-base-dir", type=str, required=True)
-    parser.add_argument("--pkg-type", type=str, required=True, action="append")
+    parser.add_argument(
+        "--pkg-namespace", type=str, required=True, action="append"
+    )
     arg_info = ArgumentInfo()
     args = parser.parse_args(namespace=arg_info)
 
     dependencies = load_manifest_dependencies(args.pkg_base_dir)
 
-    addon_dirs = {
-        "ten_packages": args.pkg_type,
+    ten_pkg_namespace_dirs_info = {
+        "ten_packages": args.pkg_namespace,
     }
 
     matching_folders = []
 
-    for ten_packages, addon_dir in addon_dirs.items():
-        for subdir in addon_dir:
-            path = os.path.join(args.app_base_dir, ten_packages, subdir)
+    pkg_type_to_pkg_namespace = {
+        "extension": "extension",
+        "system": "system",
+        "protocol": "generic",
+        "lang_addon_loader": "generic",
+    }
 
-            if os.path.isdir(path):
+    for (
+        ten_packages,
+        ten_pkg_namespace_dirs,
+    ) in ten_pkg_namespace_dirs_info.items():
+        for ten_pkg_namespace_dir in ten_pkg_namespace_dirs:
+            ten_pkg_namespace_path = os.path.join(
+                args.app_base_dir, ten_packages, ten_pkg_namespace_dir
+            )
+
+            if os.path.isdir(ten_pkg_namespace_path):
                 # List all sub-directories in this directory.
-                subfolders = [
+                ten_pkg_paths = [
                     f
-                    for f in os.listdir(path)
-                    if os.path.isdir(os.path.join(path, f))
+                    for f in os.listdir(ten_pkg_namespace_path)
+                    if os.path.isdir(os.path.join(ten_pkg_namespace_path, f))
                 ]
 
                 # Filter subdirectories that contain a BUILD.gn file.
-                subfolders_with_buildgn = filter_subfolders_with_buildgn(
-                    path, subfolders
+                ten_pkg_dirs_with_buildgn = filter_folders_with_buildgn(
+                    ten_pkg_namespace_path, ten_pkg_paths
                 )
 
                 # Check if the subfolder matches any dependency name and type.
-                for folder in subfolders_with_buildgn:
+                for ten_pkg_dir in ten_pkg_dirs_with_buildgn:
                     for dep in dependencies:
-                        if folder == dep["name"] and subdir == dep["type"]:
+                        expected_namespace = pkg_type_to_pkg_namespace.get(
+                            dep["type"], "generic"
+                        )
+                        if (
+                            ten_pkg_dir == dep["name"]
+                            and ten_pkg_namespace_dir == expected_namespace
+                        ):
                             matching_folders.append(
-                                f"{ten_packages}/{subdir}/{folder}"
+                                (
+                                    f"{ten_packages}/"
+                                    f"{ten_pkg_namespace_dir}/"
+                                    f"{ten_pkg_dir}"
+                                )
                             )
 
     # Print the matching subfolders.
-    for folder in matching_folders:
-        print(folder)
+    for ten_pkg_dir in matching_folders:
+        print(ten_pkg_dir)
