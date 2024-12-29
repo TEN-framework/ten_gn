@@ -27,11 +27,11 @@ template("ten_package") {
   } else if (invoker.package_kind == "protocol") {
     package_output_root_dir =
         "${root_out_dir}/ten_packages/protocol/${package_output_root_dir_name}"
+  } else if (invoker.package_kind == "lang_addon_loader") {
+    package_output_root_dir = "${root_out_dir}/ten_packages/lang_addon_loader/${package_output_root_dir_name}"
   } else if (invoker.package_kind == "extension") {
     package_output_root_dir =
         "${root_out_dir}/ten_packages/extension/${package_output_root_dir_name}"
-  } else if (invoker.package_kind == "extension_group") {
-    package_output_root_dir = "${root_out_dir}/ten_packages/extension_group/${package_output_root_dir_name}"
   } else if (invoker.package_kind == "system") {
     package_output_root_dir =
         "${root_out_dir}/ten_packages/system/${package_output_root_dir_name}"
@@ -48,8 +48,8 @@ template("ten_package") {
     if (invoker.package_kind == "app") {
       build_type = "executable"
     } else if (invoker.package_kind == "protocol" ||
+               invoker.package_kind == "lang_addon_loader" ||
                invoker.package_kind == "extension" ||
-               invoker.package_kind == "extension_group" ||
                invoker.package_kind == "system") {
       build_type = "shared_library"
     }
@@ -295,9 +295,9 @@ template("ten_package") {
                       "--pkg-type",
                       "extension",
                       "--pkg-type",
-                      "extension_group",
-                      "--pkg-type",
                       "protocol",
+                      "--pkg-type",
+                      "lang_addon_loader",
                       "--pkg-type",
                       "system",
                     ],
