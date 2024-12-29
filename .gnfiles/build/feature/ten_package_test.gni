@@ -87,7 +87,7 @@ template("ten_package_test") {
                         rebase_path("${pkg_base_dir}"),
                         "--app-base-dir",
                         rebase_path("${app_base_dir}"),
-                        "--pkg-namespace",
+                        "--pkg-type",
                         "system",
                       ],
                       "list lines")
