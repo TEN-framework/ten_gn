@@ -1,3 +1,10 @@
+#
+# Copyright © 2025 Agora
+# This file is part of TEN Framework, an open source project.
+# Licensed under the Apache License, Version 2.0, with certain conditions.
+# Refer to the "LICENSE" file in the root directory for more information.
+#
+
 # list source files and output files
 # Usage:
 #   python glob_tsconfig_files.py tsconfig.json         # prints sources
@@ -6,9 +13,6 @@
 import json
 import sys
 import re
-import glob
-import os
-import fnmatch
 
 
 sys.dont_write_bytecode = True

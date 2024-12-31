@@ -1,15 +1,14 @@
 #
-#
-# Agora Real Time Engagement
-# Created by Wei Hu in 2022-06.
-# Copyright (c) 2023 Agora IO. All rights reserved.
-#
+# Copyright © 2025 Agora
+# This file is part of TEN Framework, an open source project.
+# Licensed under the Apache License, Version 2.0, with certain conditions.
+# Refer to the "LICENSE" file in the root directory for more information.
 #
 import json
 import os
-from build.scripts import fs_utils, log, cmd_exec
 from importlib import machinery
 import argparse
+from build.scripts import fs_utils, log, cmd_exec
 
 glob_tsconfig_files = machinery.SourceFileLoader(
     "glob_tsconfig_files",
@@ -18,32 +17,29 @@ glob_tsconfig_files = machinery.SourceFileLoader(
 
 
 class NpmRunBuild:
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         self.args = args
         self.show_extra_log(
-            "npm_run_build.py\n  project_dir: {0}\n  tsconfig: {1}\n  out_dir:"
-            " {2}\n  ref: {3}\n  platform: {4}\n  remove_node_modules: {5}\n "
-            " remove_tsbuildinfo: {6}\n  remove_src: {7}".format(
-                args.project_dir,
-                args.tsconfig_file,
-                args.out_dir,
-                args.ref,
-                args.platform,
-                args.remove_node_modules,
-                args.remove_tsbuildinfo,
-                args.remove_src,
-            )
+            "npm_run_build.py\n"
+            f"  project_dir: {args.project_dir}\n"
+            f"  tsconfig: {args.tsconfig_file}\n"
+            f"  out_dir: {args.out_dir}\n"
+            f"  ref: {args.ref}\n"
+            f"  platform: {args.platform}\n"
+            f"  remove_node_modules: {args.remove_node_modules}\n"
+            f"  remove_tsbuildinfo: {args.remove_tsbuildinfo}\n"
+            f"  remove_src: {args.remove_src}\n"
         )
 
-    def show_extra_log(self, str):
+    def show_extra_log(self, str: str) -> None:
         if self.args.log_level >= 1:
             log.info(str)
 
-    def sync_source(self, tsconfig):
+    def sync_source(self, tsconfig) -> None:
         tsconfig_dir = os.path.dirname(self.args.tsconfig_file)
 
         self.show_extra_log(
-            "Sync sources: {0} => {1}".format(tsconfig_dir, self.args.out_dir)
+            f"Sync sources: {tsconfig_dir} => {self.args.out_dir}"
         )
 
         sources = glob_tsconfig_files.glob_ts_sources(
@@ -67,8 +63,7 @@ class NpmRunBuild:
             os.path.join(self.args.out_dir, "tsconfig.json"),
         )
 
-    # Writes new prj_root_dir/tsconfig.json
-
+    # Writes new prj_root_dir/tsconfig.json.
     def dump_new_tsconfig(self, tsconfig_info):
         tsconfig_info["compilerOptions"]["outDir"] = (
             self.args.out_dir + "/build"
@@ -142,32 +137,25 @@ class NpmRunBuild:
         os.chdir(cur_path)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-project_dir", "--project_dir", type=str, required=True)
-parser.add_argument(
-    "-tsconfig_file", "--tsconfig_file", type=str, required=True
-)
-parser.add_argument("-out_dir", "--out_dir", type=str, required=True)
-parser.add_argument("-ref", "--ref", type=str, required=False, default="-")
-parser.add_argument("-platform", "--platform", type=str, required=True)
-parser.add_argument("-library_path", "--library_path", type=str, required=False)
-parser.add_argument(
-    "-remove_node_modules", "--remove_node_modules", type=bool, default=False
-)
-parser.add_argument(
-    "-remove_tsbuildinfo", "--remove_tsbuildinfo", type=bool, default=False
-)
-parser.add_argument("-remove_src", "--remove_src", type=bool, default=False)
-parser.add_argument(
-    "-build_target", "--build_target", default="build", type=str, required=False
-)
-parser.add_argument(
-    "-log_level", "--log_level", default=0, type=int, required=False
-)
-parser.add_argument(
-    "-extra_args", "--extra_args", default=[], required=False, action="append"
-)
-args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--project-dir", type=str, required=True)
+    parser.add_argument("--tsconfi-file", type=str, required=True)
+    parser.add_argument("--out-dir", type=str, required=True)
+    parser.add_argument("--ref", type=str, required=False, default="-")
+    parser.add_argument("--platform", type=str, required=True)
+    parser.add_argument("--library-path", type=str, required=False)
+    parser.add_argument("--remove-node_modules", type=bool, default=False)
+    parser.add_argument("--remove-tsbuildinfo", type=bool, default=False)
+    parser.add_argument("--remove-src", type=bool, default=False)
+    parser.add_argument(
+        "--build-target", default="build", type=str, required=False
+    )
+    parser.add_argument("--log-level", default=0, type=int, required=False)
+    parser.add_argument(
+        "--extra-args", default=[], required=False, action="append"
+    )
+    args = parser.parse_args()
 
-nrb = NpmRunBuild(args)
-nrb.run()
+    nrb = NpmRunBuild(args)
+    nrb.run()

@@ -1,5 +1,5 @@
 #
-# Copyright © 2024 Agora
+# Copyright © 2025 Agora
 # This file is part of TEN Framework, an open source project.
 # Licensed under the Apache License, Version 2.0, with certain conditions.
 # Refer to the "LICENSE" file in the root directory for more information.
@@ -7,26 +7,26 @@
 import os
 import sys
 import subprocess
-from build.scripts import fs_utils, log, cmd_exec
 import argparse
+from build.scripts import fs_utils, log, cmd_exec
 
 
 class NpmInstall:
     def __init__(self, args) -> None:
         self.args = args
         self.show_extra_log(
-            "npm_install.py\n              project_dir:"
-            f" {self.args.project_dir}\n              tsconfig:"
-            f" {self.args.package_json}\n              output_dir:"
-            f" {self.args.output_dir}\n              platform:"
-            f" {self.args.platform}"
+            "npm_install.py\n"
+            f"              project_dir: {self.args.project_dir}\n"
+            f"              tsconfig: {self.args.package_json}\n"
+            f"              output_dir: {self.args.output_dir}\n"
+            f"              platform: {self.args.platform}\n"
         )
 
-    def show_extra_log(self, str):
+    def show_extra_log(self, str: str) -> None:
         if self.args.log_level >= 1:
             log.info(str)
 
-    def tsc_exist(self):
+    def is_tsc_exist(self) -> bool:
         cmd = "tsc --version"
         status, _ = cmd_exec.run_cmd_realtime(
             cmd, log_level=self.args.log_level
@@ -44,7 +44,7 @@ class NpmInstall:
         else:
             return False
 
-    def check_npm_version(self):
+    def check_npm_version(self) -> None:
         if sys.platform == "win32":
             my_cmd = ["cmd", "/c", "npm", "--version"]
         else:
@@ -72,7 +72,7 @@ class NpmInstall:
                     if not os.path.exists("node_modules") or os.path.getmtime(
                         "package-lock.json"
                     ) > os.path.getmtime("node_modules"):
-                        # npm ci: fail if lock file not satisfied
+                        # npm ci: fail if lock file not satisfied.
                         self.show_extra_log(
                             "npm install (npm ci), because package-lock.json"
                             " exists."
@@ -97,8 +97,8 @@ class NpmInstall:
                         )
 
                         # If tsc not found, we should update package-lock.json
-                        # mtime and call npm ci again
-                        if not self.tsc_exist():
+                        # mtime and call npm ci again.
+                        if not self.is_tsc_exist():
                             os.utime("package-lock.json")
                 else:
                     self.show_extra_log(
@@ -120,10 +120,10 @@ class NpmInstall:
             else:
                 self.show_extra_log("npm install success.")
                 break
-        if not self.tsc_exist():
+        if not self.is_tsc_exist():
             raise Exception(
                 "tsc not found in current npm package and global node dir,"
-                " please check"
+                " please check."
             )
 
     def run(self):
@@ -140,18 +140,15 @@ class NpmInstall:
         self.install()
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-project_dir", "--project_dir", type=str, required=True)
-parser.add_argument("-package_json", "--package_json", type=str, required=True)
-parser.add_argument(
-    "-package_lock_json", "--package_lock_json", type=str, required=False
-)
-parser.add_argument("-output_dir", "--output_dir", type=str, required=True)
-parser.add_argument("-platform", "--platform", type=str, required=True)
-parser.add_argument(
-    "-log_level", "--log_level", type=int, default=0, required=True
-)
-args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--project-dir", type=str, required=True)
+    parser.add_argument("--package-json", type=str, required=True)
+    parser.add_argument("--package-lock-json", type=str, required=False)
+    parser.add_argument("--output-dir", type=str, required=True)
+    parser.add_argument("--platform", type=str, required=True)
+    parser.add_argument("--log-level", type=int, default=0, required=True)
+    args = parser.parse_args()
 
-ni = NpmInstall(args)
-ni.run()
+    ni = NpmInstall(args)
+    ni.run()
