@@ -140,7 +140,7 @@ class NpmRunBuild:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--project-dir", type=str, required=True)
-    parser.add_argument("--tsconfi-file", type=str, required=True)
+    parser.add_argument("--tsconfig-file", type=str, required=True)
     parser.add_argument("--out-dir", type=str, required=True)
     parser.add_argument("--ref", type=str, required=False, default="-")
     parser.add_argument("--platform", type=str, required=True)
