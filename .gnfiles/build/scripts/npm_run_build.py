@@ -6,7 +6,7 @@
 #
 import json
 import os
-from importlib import machinery
+from importlib import machinery  # Use for dynamic loading of modules.
 import argparse
 from build.scripts import fs_utils, log, cmd_exec
 
@@ -35,7 +35,9 @@ class NpmRunBuild:
         if self.args.log_level >= 1:
             log.info(str)
 
-    def sync_source(self, tsconfig) -> None:
+    # Synchronize the source files to the specified output directory `out_dir`
+    # based on the configuration in the `tsconfig.json` file.
+    def sync_source(self, tsconfig_info) -> None:
         tsconfig_dir = os.path.dirname(self.args.tsconfig_file)
 
         self.show_extra_log(
@@ -43,7 +45,7 @@ class NpmRunBuild:
         )
 
         sources = glob_tsconfig_files.glob_ts_sources(
-            self.args.tsconfig_file, tsconfig
+            self.args.tsconfig_file, tsconfig_info
         )
 
         if os.path.abspath(tsconfig_dir) != os.path.abspath(self.args.out_dir):
@@ -53,34 +55,44 @@ class NpmRunBuild:
             #
             # common_utils.remove_tree(prj_root_dir + "/build")
             fs_utils.remove_tree(self.args.out_dir + "/src")
+
         for src in sources:
             dst = os.path.relpath(src, tsconfig_dir)
             dst = os.path.join(self.args.out_dir, dst)  # build/../src/**/*
             fs_utils.mkdir_p(os.path.dirname(dst))
             fs_utils.copy(src, dst)
+
         fs_utils.copy(
             self.args.tsconfig_file,
             os.path.join(self.args.out_dir, "tsconfig.json"),
         )
 
-    # Writes new prj_root_dir/tsconfig.json.
+    # Modify the `outDir` and `references` fields in the `tsconfig.json` file
+    # and save the updated configuration to the output directory.
     def dump_new_tsconfig(self, tsconfig_info):
         tsconfig_info["compilerOptions"]["outDir"] = (
             self.args.out_dir + "/build"
         )
+
         if len(self.args.ref) > 1:
             ref_name_paths = [r.split("=>") for r in self.args.ref.split(",")]
+
             if "paths" not in tsconfig_info["compilerOptions"].keys():
                 tsconfig_info["compilerOptions"]["paths"] = {}
+
             tsconfig_info["references"] = []
+
             for name, path in ref_name_paths:
                 tsconfig_info["compilerOptions"]["paths"][name] = [path]
                 tsconfig_info["references"].append({"path": path})
+
         out_tsconfig = self.args.out_dir + "/tsconfig.json"
+
         with open(out_tsconfig, "w") as f:
             log.info("Dump {0}".format(out_tsconfig))
             json.dump(tsconfig_info, f)
 
+    # Delete the `tsconfig.json` file from the output directory.
     def remove_new_tsconfig(self, prj_root_dir):
         os.remove(prj_root_dir + "/tsconfig.json")
 
@@ -93,26 +105,32 @@ class NpmRunBuild:
 
         if len(self.args.extra_args) > 0:
             cmd += ["--", " ".join(self.args.extra_args)]
+
         self.show_extra_log(" ".join(cmd))
+
         cmd_exec.run_cmd_realtime(cmd, log_level=self.args.log_level)
 
     def cleanup(self):
         self.show_extra_log("Compile done, cleanup")
 
+        # Delete node_modules/ directory.
         if self.args.remove_node_modules and os.path.exists("node_modules"):
             fs_utils.remove_tree("node_modules")
 
+        # Delete tsconfig.tsbuildinfo file.
         if self.args.remove_tsbuildinfo and os.path.exists(
             "tsconfig.tsbuildinfo"
         ):
             os.remove("tsconfig.tsbuildinfo")
 
+        # Delete src/ directory.
         if self.args.remove_src and os.path.exists("src"):
             fs_utils.remove_tree("src")
 
     def generate_path_json(self):
         if self.args.library_path:
-            # write path to path.json, which can be used by webpack or other typescript build tool
+            # Write path to path.json, which can be used by webpack or other
+            # typescript build tool.
             with open(os.path.join(self.args.out_dir, "path.json"), "w") as f:
                 path_content = {}
                 path_content["PROD_APP_DIR"] = os.path.dirname(
@@ -121,19 +139,32 @@ class NpmRunBuild:
                 json.dump(path_content, f)
 
     def run(self):
+        # Create the output directory if it does not exist.
         fs_utils.mkdir_p(os.path.join(self.args.out_dir, "build"))
+
+        # Record the current working directory path and switch to the output
+        # directory.
         cur_path = os.path.abspath(os.path.curdir)
         os.chdir(self.args.out_dir)
+
         tsconfig_info = glob_tsconfig_files.read_ts_config(
             self.args.tsconfig_file
         )
+
+        # Sync the source code to the output directory.
         self.sync_source(tsconfig_info)
+
+        # Generate a new `tsconfig.json` file based on the configuration.
         self.dump_new_tsconfig(tsconfig_info)
-        # Before running 'npm run build', we need to generate a special `path.
-        # json` file first.
+
+        # Before running 'npm run build', we need to generate a special
+        # `path.json` file first.
         self.generate_path_json()
+
         self.npm_run_build()
+
         self.cleanup()
+
         os.chdir(cur_path)
 
 

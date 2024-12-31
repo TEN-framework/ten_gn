@@ -4,19 +4,9 @@
 # Licensed under the Apache License, Version 2.0, with certain conditions.
 # Refer to the "LICENSE" file in the root directory for more information.
 #
-
-# list source files and output files
-# Usage:
-#   python glob_tsconfig_files.py tsconfig.json         # prints sources
-#   python glob_tsconfig_files.py tsconfig.json out_dir # prints outputs
-
 import json
 import sys
 import re
-
-
-sys.dont_write_bytecode = True
-# proper glob for python 2 & 3
 
 
 def read_ts_config(file_name):
@@ -28,6 +18,7 @@ def read_ts_config(file_name):
 
     str_pattern = r'"(?:\\.|[^"])*"'
 
+    # Remove comments.
     def keep_str_remove_comments(m):
         if m.group(0).startswith("/"):
             return ""
@@ -40,6 +31,7 @@ def read_ts_config(file_name):
         ts_config,
     )
 
+    # Remove redundant commas.
     def keep_str_remove_redundant_commas(m):
         if m.group(0).startswith(","):
             return m.group(0)[1:]
@@ -52,11 +44,12 @@ def read_ts_config(file_name):
         ts_config,
     )
 
+    # Parse ts_config.json.
     config = json.loads(ts_config)
     return config
 
 
 if __name__ == "__main__":
-    # outputs depends on tsconfig.json, but not including this file
+    # Outputs depends on tsconfig.json, but not including this file.
     ts_config = read_ts_config(sys.argv[1])
     print(ts_config["compilerOptions"]["outDir"])

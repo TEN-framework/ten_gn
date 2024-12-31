@@ -4,12 +4,6 @@
 # Licensed under the Apache License, Version 2.0, with certain conditions.
 # Refer to the "LICENSE" file in the root directory for more information.
 #
-
-# list source files and output files
-# Usage:
-#   python glob_tsconfig_files.py tsconfig.json         # prints sources
-#   python glob_tsconfig_files.py tsconfig.json out_dir # prints outputs
-
 import json
 import sys
 import re
@@ -18,11 +12,9 @@ import os
 import fnmatch
 
 
-sys.dont_write_bytecode = True
-# proper glob for python 2 & 3
-
-
-def proper_glob(src_pattern):
+# Supports file matching with recursive wildcards `**`, while excluding the
+# `node_modules/` directory.
+def proper_glob(src_pattern: str) -> list[str]:
     if "**" in src_pattern:
         srcs = []
         folder, pattern = src_pattern.split("**")
@@ -47,6 +39,7 @@ def read_ts_config(file_name):
 
     str_pattern = r'"(?:\\.|[^"])*"'
 
+    # Remove comments.
     def keep_str_remove_comments(m):
         if m.group(0).startswith("/"):
             return ""
@@ -59,6 +52,7 @@ def read_ts_config(file_name):
         ts_config,
     )
 
+    # Remove redundant commas.
     def keep_str_remove_redundant_commas(m):
         if m.group(0).startswith(","):
             return m.group(0)[1:]
@@ -71,10 +65,13 @@ def read_ts_config(file_name):
         ts_config,
     )
 
+    # Parse ts_config.json.
     config = json.loads(ts_config)
     return config
 
 
+# Lists the source files or output files that match the criteria specified in
+# the `include` and `exclude` fields of the `tsconfig.json` file.
 def glob_ts_sources(ts_config_file, ts_config, out_dir=None):
     # Remember current working directory so that we can come back here.
     dir = os.path.abspath(".")
@@ -102,6 +99,10 @@ def glob_ts_sources(ts_config_file, ts_config, out_dir=None):
         results = []
         for line in srcs:
             if out_dir:
+                # Replaces the `.ts` extension in the source file paths with
+                # `.js` and places them in the specified output directory. This
+                # assumes all source files are `.ts` files and the output files
+                # are `.js` files.
                 results.append(
                     out_dir.rstrip("/")
                     + "/"
@@ -121,9 +122,11 @@ if __name__ == "__main__":
         out_dir = sys.argv[2]
     else:
         out_dir = None
+
     # outputs depends on tsconfig.json, but not including this file
     if not out_dir:
         print(sys.argv[1])
+
     ts_config = read_ts_config(sys.argv[1])
     sources = glob_ts_sources(sys.argv[1], ts_config, out_dir)
     for source in sources:
