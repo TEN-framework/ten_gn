@@ -9,8 +9,8 @@ import argparse
 from typing import Optional
 from build.scripts import fs_utils, timestamp_proxy
 
-""" Copy from the paths of the 1st to N-1 arguments to the path of the Nth
-argument.
+"""
+Copy from the paths of the 1st to N-1 arguments to the path of the Nth argument.
 """
 
 
@@ -44,7 +44,7 @@ def main():
     dst = args.destination
 
     try:
-        # Check all the sources are existed.
+        # Check if all the sources are existed.
         for src in src_paths:
             if not os.path.exists(src):
                 raise Exception(f"{src} does not exist")
@@ -58,6 +58,7 @@ def main():
 
         for src in src_paths:
             if src.endswith(timestamp_proxy.TG_TIMESTAMP_PROXY_EXTENSION):
+                # This special timestamp file does not need to be copied.
                 continue
             try:
                 fs_utils.copy(src, dst)

@@ -10,15 +10,26 @@ template("ten_package_test") {
   _target_name = target_name
   package_deps = []
 
-  output_name = _target_name
+  build_output_name = _target_name
   if (defined(invoker.output_name) && invoker.output_name != "") {
-    output_name = invoker.output_name
+    build_output_name = invoker.output_name
   }
 
-  build_target_name = "${_target_name}_executable"
+  if (is_linux || is_mac) {
+    real_build_output_file_name = "${build_output_name}"
+  } else if (is_win) {
+    real_build_output_file_name = "${build_output_name}.exe"
+  }
 
-  executable(build_target_name) {
-    output_dir = "${root_out_dir}/tests"
+  output_dir_related_to_package_output_root_dir = "bin"
+  build_output_dir =
+      "${root_out_dir}/${output_dir_related_to_package_output_root_dir}"
+
+  unique_build_target_name = "${_target_name}_executable"
+
+  executable(unique_build_target_name) {
+    output_dir = "${build_output_dir}"
+    output_name = "${build_output_name}"
 
     forward_variables_from(invoker,
                            [
@@ -98,7 +109,32 @@ template("ten_package_test") {
     }
   }
 
-  package_deps += [ ":${build_target_name}" ]
+  # Copy the build results to the final destination.
+  unique_copy_build_result_target_name = "${_target_name}_copy_build_result"
+  unique_copy_build_result_timestamp_proxy_file =
+      "${target_gen_dir}/${unique_copy_build_result_target_name}"
+  action("${unique_copy_build_result_target_name}") {
+    script = "//.gnfiles/build/scripts/copy_fs_entry.py"
+
+    inputs = [ "${build_output_dir}/${real_build_output_file_name}" ]
+    outputs = [ "${unique_copy_build_result_timestamp_proxy_file}" ]
+
+    target_dir = get_label_info(":${unique_build_target_name}", "dir")
+
+    args = [
+      "--source",
+      rebase_path("${build_output_dir}/${real_build_output_file_name}"),
+      "--destination",
+      rebase_path(
+          "${target_dir}/${output_dir_related_to_package_output_root_dir}/${real_build_output_file_name}"),
+      "--tg-timestamp-proxy-file",
+      rebase_path(unique_copy_build_result_timestamp_proxy_file),
+    ]
+
+    deps = [ ":${unique_build_target_name}" ]
+  }
+
+  package_deps += [ ":${unique_copy_build_result_target_name}" ]
 
   group(_target_name) {
     forward_variables_from(invoker,
