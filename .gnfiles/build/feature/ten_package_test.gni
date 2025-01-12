@@ -89,7 +89,7 @@ template("ten_package_test") {
     # Setup relevant variables for the installed system package.
     if (invoker.package_kind == "extension") {
       pkg_base_dir = get_path_info(_target_name, "dir")
-      app_base_dir = "${pkg_base_dir}/.ten/app/"
+      app_base_dir = "${pkg_base_dir}/../../../"
 
       used_system_pkgs =
           exec_script("//.gnfiles/build/scripts/get_used_ten_pkgs.py",
@@ -102,6 +102,7 @@ template("ten_package_test") {
                         "system",
                       ],
                       "list lines")
+
       foreach(used_pkg, used_system_pkgs) {
         configs +=
             [ "${app_base_dir}${used_pkg}:config_for_standalone_ten_packages" ]

@@ -37,6 +37,14 @@ def load_manifest_dependencies(pkg_base_dir: str) -> list[dict]:
     return []
 
 
+def load_manifest(path: str) -> dict:
+    manifest_path = os.path.join(path, "manifest.json")
+    if os.path.isfile(manifest_path):
+        with open(manifest_path, "r") as f:
+            return json.load(f)
+    return {}
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--app-base-dir", type=str, required=True)
@@ -78,9 +86,35 @@ if __name__ == "__main__":
                 # Check if the subfolder matches any dependency name and type.
                 for ten_pkg_dir in ten_pkg_dirs_with_buildgn:
                     for dep in dependencies:
+                        dep_name = dep.get("name")
+                        dep_type = dep.get("type")
+
+                        # If 'name' or 'type' is missing but 'path' is present,
+                        # load `manifest.json` to retrieve them.
+                        if not dep_name or not dep_type:
+                            dep_path = dep.get("path")
+                            if dep_path:
+                                combined_path = os.path.join(
+                                    args.app_base_dir,
+                                    dep_path,
+                                )
+
+                                # Load `manifest.json` from the specified path.
+                                loaded_manifest = load_manifest(combined_path)
+                                dep_name = loaded_manifest.get("name")
+                                dep_type = loaded_manifest.get("type")
+                                if not dep_name or not dep_type:
+                                    # If the necessary information is still
+                                    # missing, skip this dependency.
+                                    continue
+                            else:
+                                # If there is no 'path' field, skip this
+                                # dependency.
+                                continue
+
                         if (
-                            ten_pkg_dir == dep["name"]
-                            and ten_pkg_type_dir == dep["type"]
+                            ten_pkg_dir == dep_name
+                            and ten_pkg_type_dir == dep_type
                         ):
                             matching_folders.append(
                                 (
@@ -90,6 +124,6 @@ if __name__ == "__main__":
                                 )
                             )
 
-    # Print the matching subfolders.
+    # Print the matching sub-folders.
     for ten_pkg_dir in matching_folders:
         print(ten_pkg_dir)
