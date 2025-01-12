@@ -189,7 +189,6 @@ template("ten_package") {
 
         app_base_dir = "${pkg_base_dir}/../../../"
 
-        # =-=-= extension 的话应该要切到 .ten/app/ 下面做编译, 需要补一个 BUILD.gn, 直接用 default_app_cpp?
         used_system_pkgs =
             exec_script("//.gnfiles/build/scripts/get_used_ten_pkgs.py",
                         [
@@ -351,37 +350,9 @@ template("ten_package") {
                     "list lines")
 
     foreach(installed_buildable_addon, installed_buildable_addons) {
-      installed_buildable_addon_target_str =
-          string_replace(installed_buildable_addon, "/", "_")
-
-      installed_buildable_addon_action_target = "${_target_name}_copy_build_result_of_${installed_buildable_addon_target_str}"
-
-      action(installed_buildable_addon_action_target) {
-        script = "//.gnfiles/build/scripts/copy_fs_entry.py"
-
-        args = [
-          "--source",
-          rebase_path("${root_out_dir}/${installed_buildable_addon}"),
-          "--destination",
-          rebase_path(
-              "${package_output_root_dir}/${installed_buildable_addon}"),
-        ]
-
-        outputs = [ "${package_output_root_dir}/${installed_buildable_addon}" ]
-
-        forward_variables_from(invoker,
-                               [
-                                 "deps",
-                                 "public_deps",
-                                 "data_deps",
-                               ])
-
-        # The addition of the following deps will cause the app's building
-        # process to also build the installed and buildable C++ addons.
-        deps = [ "${installed_buildable_addon}" ]
-      }
-
-      package_deps += [ ":${installed_buildable_addon_action_target}" ]
+      # The addition of the following deps will cause the app's building process
+      # to also build the installed and buildable C++ addons.
+      package_deps += [ "${installed_buildable_addon}" ]
     }
   }
 
