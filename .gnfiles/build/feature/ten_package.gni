@@ -62,8 +62,10 @@ template("ten_package") {
     if (build_type == "shared_library") {
       output_dir_related_to_package_output_root_dir = "lib"
 
-      if (is_linux || is_mac) {
+      if (is_linux) {
         real_build_output_file_name = "lib${build_output_name}.so"
+      } else if (is_mac) {
+        real_build_output_file_name = "lib${build_output_name}.dylib"
       } else if (is_win) {
         real_build_output_file_name = "${build_output_name}.dll"
       }
