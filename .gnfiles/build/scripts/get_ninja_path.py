@@ -6,6 +6,7 @@
 #
 import os
 import sys
+import platform
 
 
 def main(argv):
@@ -15,10 +16,15 @@ def main(argv):
 
     dir_name = os.path.join(dir_name, "..", "..", "bin")
     if sys.platform == "win32":
-        if os.uname().machine in ["arm64", "aarch64"]:
-            dir_name = os.path.join(dir_name, "win", "arm64", "ninja.exe")
+        machine = platform.machine().lower()
+        if machine in ["arm64", "aarch64"]:
+            arch_folder = "arm64"
+        elif machine in ["amd64", "x86_64"]:
+            arch_folder = "x64"
         else:
-            dir_name = os.path.join(dir_name, "win", "x64", "ninja.exe")
+            raise ValueError(f"Unsupported architecture: {machine}")
+
+        dir_name = os.path.join(dir_name, "win", arch_folder, "ninja.exe")
         dir_name = os.path.abspath(dir_name).replace("\\", "/")
     elif sys.platform == "darwin":
         if os.uname().machine in ["arm64", "aarch64"]:
