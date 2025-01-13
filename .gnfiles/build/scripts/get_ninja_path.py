@@ -27,10 +27,9 @@ def main(argv):
         dir_name = os.path.join(dir_name, "win", arch_folder, "ninja.exe")
         dir_name = os.path.abspath(dir_name).replace("\\", "/")
     elif sys.platform == "darwin":
-        if os.uname().machine in ["arm64", "aarch64"]:
-            dir_name = os.path.join(dir_name, "mac", "arm64", "ninja")
-        else:
-            dir_name = os.path.join(dir_name, "mac", "x64", "ninja")
+        # The ninja for Mac is a binary that supports both x64 and arm64
+        # architectures.
+        dir_name = os.path.join(dir_name, "mac", "ninja")
         dir_name = os.path.abspath(dir_name)
     else:
         if os.uname().machine in ["arm64", "aarch64"]:

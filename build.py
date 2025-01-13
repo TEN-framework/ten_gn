@@ -99,7 +99,17 @@ def determine_essential_paths(all_args: AllArgumentInfo) -> None:
             all_args.ninja_path, "win", arch_folder, "ninja.exe"
         )
     elif sys.platform == "darwin":
-        all_args.gn_path = os.path.join(all_args.gn_path, "mac", "gn")
+        if os.uname().machine in ["arm64", "aarch64"]:
+            all_args.gn_path = os.path.join(
+                all_args.gn_path, "mac", "arm64", "gn"
+            )
+        else:
+            all_args.gn_path = os.path.join(
+                all_args.gn_path, "mac", "x64", "gn"
+            )
+
+        # The ninja for Mac is a binary that supports both x64 and arm64
+        # architectures.
         all_args.ninja_path = os.path.join(all_args.ninja_path, "mac", "ninja")
     else:
         if os.uname().machine in ["arm64", "aarch64"]:
