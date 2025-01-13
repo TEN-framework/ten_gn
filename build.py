@@ -6,6 +6,7 @@ import os
 import sys
 import subprocess
 import shutil
+import platform
 from typing import List, Tuple
 import argparse
 
@@ -83,12 +84,32 @@ def determine_essential_paths(all_args: AllArgumentInfo) -> None:
     all_args.ninja_path = os.path.join(all_args.script_path, "bin")
 
     if sys.platform == "win32":
-        all_args.gn_path = os.path.join(all_args.gn_path, "win", "gn.exe")
+        machine = platform.machine().lower()
+        if machine in ["arm64", "aarch64"]:
+            arch_folder = "arm64"
+        elif machine in ["amd64", "x86_64"]:
+            arch_folder = "x64"
+        else:
+            raise ValueError(f"Unsupported architecture: {machine}")
+
+        all_args.gn_path = os.path.join(
+            all_args.gn_path, "win", arch_folder, "gn.exe"
+        )
         all_args.ninja_path = os.path.join(
-            all_args.ninja_path, "win", "ninja.exe"
+            all_args.ninja_path, "win", arch_folder, "ninja.exe"
         )
     elif sys.platform == "darwin":
-        all_args.gn_path = os.path.join(all_args.gn_path, "mac", "gn")
+        if os.uname().machine in ["arm64", "aarch64"]:
+            all_args.gn_path = os.path.join(
+                all_args.gn_path, "mac", "arm64", "gn"
+            )
+        else:
+            all_args.gn_path = os.path.join(
+                all_args.gn_path, "mac", "x64", "gn"
+            )
+
+        # The ninja for Mac is a binary that supports both x64 and arm64
+        # architectures.
         all_args.ninja_path = os.path.join(all_args.ninja_path, "mac", "ninja")
     else:
         if os.uname().machine in ["arm64", "aarch64"]:
