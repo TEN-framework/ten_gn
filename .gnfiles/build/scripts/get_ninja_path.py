@@ -15,13 +15,22 @@ def main(argv):
 
     dir_name = os.path.join(dir_name, "..", "..", "bin")
     if sys.platform == "win32":
-        dir_name = os.path.join(dir_name, "win", "ninja.exe")
+        if os.uname().machine in ["arm64", "aarch64"]:
+            dir_name = os.path.join(dir_name, "win", "arm64", "ninja.exe")
+        else:
+            dir_name = os.path.join(dir_name, "win", "x64", "ninja.exe")
         dir_name = os.path.abspath(dir_name).replace("\\", "/")
     elif sys.platform == "darwin":
-        dir_name = os.path.join(dir_name, "mac", "ninja")
+        if os.uname().machine in ["arm64", "aarch64"]:
+            dir_name = os.path.join(dir_name, "mac", "arm64", "ninja")
+        else:
+            dir_name = os.path.join(dir_name, "mac", "x64", "ninja")
         dir_name = os.path.abspath(dir_name)
     else:
-        dir_name = os.path.join(dir_name, "linux", "ninja")
+        if os.uname().machine in ["arm64", "aarch64"]:
+            dir_name = os.path.join(dir_name, "linux", "arm64", "ninja")
+        else:
+            dir_name = os.path.join(dir_name, "linux", "x64", "ninja")
         dir_name = os.path.abspath(dir_name)
 
     sys.stdout.write(dir_name)

@@ -83,10 +83,20 @@ def determine_essential_paths(all_args: AllArgumentInfo) -> None:
     all_args.ninja_path = os.path.join(all_args.script_path, "bin")
 
     if sys.platform == "win32":
-        all_args.gn_path = os.path.join(all_args.gn_path, "win", "gn.exe")
-        all_args.ninja_path = os.path.join(
-            all_args.ninja_path, "win", "ninja.exe"
-        )
+        if os.uname().machine in ["arm64", "aarch64"]:
+            all_args.gn_path = os.path.join(
+                all_args.gn_path, "win", "arm64", "gn.exe"
+            )
+            all_args.ninja_path = os.path.join(
+                all_args.ninja_path, "win", "arm64", "ninja.exe"
+            )
+        else:
+            all_args.gn_path = os.path.join(
+                all_args.gn_path, "win", "x64", "gn.exe"
+            )
+            all_args.ninja_path = os.path.join(
+                all_args.ninja_path, "win", "x64", "ninja.exe"
+            )
     elif sys.platform == "darwin":
         all_args.gn_path = os.path.join(all_args.gn_path, "mac", "gn")
         all_args.ninja_path = os.path.join(all_args.ninja_path, "mac", "ninja")
