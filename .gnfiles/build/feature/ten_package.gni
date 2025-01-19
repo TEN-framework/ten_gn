@@ -241,6 +241,8 @@ template("ten_package") {
   # sources to specified destinations. All the destination folders of
   # 'resources' are based on <package_output_root_dir>.
   if (defined(invoker.resources) && invoker.resources != []) {
+    resource_index = 0
+
     foreach(resource, invoker.resources) {
       resource_info = {
       }
@@ -250,37 +252,29 @@ template("ten_package") {
                       [
                         "--input-string",
                         "${resource}",
-                        "--delimiter",
+                        "--src-dest-delimiter",
                         "=>",
-                        "--delimiter",
-                        "|",
+                        "--src-base-delimiter",
+                        ":",
                       ],
                       "json")
 
-      resource_src_paths = []
-      resource_src_paths = resource_info.sources
+      resource_src_path = resource_info.source
       resource_dest_path = resource_info.destination
 
-      resource_dest_str = string_replace(resource_dest_path, "/", "_")
-
       unique_resource_action_target_name =
-          "${_target_name}_copy_resource_to_${resource_dest_str}"
+          "${_target_name}_resource_${resource_index}"
 
       # The only task handled by resources is copying.
       action("${unique_resource_action_target_name}") {
         script = "//.gnfiles/build/scripts/copy_fs_entry.py"
 
-        inputs = resource_src_paths
+        inputs = [ resource_src_path ]
         outputs = [ "${package_output_root_dir}/${resource_dest_path}" ]
 
-        args = []
-        foreach(resource_src_path, resource_src_paths) {
-          args += [
-            "--source",
-            rebase_path(resource_src_path),
-          ]
-        }
-        args += [
+        args = [
+          "--source",
+          rebase_path(resource_src_path),
           "--destination",
           rebase_path("${package_output_root_dir}/${resource_dest_path}"),
         ]
@@ -294,6 +288,8 @@ template("ten_package") {
       }
 
       package_deps += [ ":${unique_resource_action_target_name}" ]
+
+      resource_index += 1
     }
   }
 

@@ -9,14 +9,10 @@ import argparse
 from typing import Optional
 from build.scripts import fs_utils, timestamp_proxy
 
-"""
-Copy from the paths of the 1st to N-1 arguments to the path of the Nth argument.
-"""
-
 
 class ArgumentInfo(argparse.Namespace):
     def __init__(self):
-        self.source: list[str]
+        self.source: str
         self.destination: str
         self.tg_timestamp_proxy_file: Optional[str] = None
 
@@ -25,12 +21,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Copy source files to destination."
     )
-    parser.add_argument(
-        "--source", action="append", required=True, help="Source file paths"
-    )
-    parser.add_argument(
-        "--destination", required=True, help="Destination file path"
-    )
+    parser.add_argument("--source", required=True, help="Source path")
+    parser.add_argument("--destination", required=True, help="Destination path")
     parser.add_argument(
         "--tg-timestamp-proxy-file",
         required=False,
@@ -40,30 +32,24 @@ def main():
     arg_info = ArgumentInfo()
     args = parser.parse_args(namespace=arg_info)
 
-    src_paths = args.source
-    dst = args.destination
-
     try:
-        # Check if all the sources are existed.
-        for src in src_paths:
-            if not os.path.exists(src):
-                raise Exception(f"{src} does not exist")
+        # Check if the source is existed.
+        if not os.path.exists(args.source):
+            raise Exception(f"{args.source} does not exist")
 
         try:
             # Ensure the destination folder, if specified, does exist.
-            if os.path.dirname(dst) != "":
-                fs_utils.mkdir_p(os.path.dirname(dst))
+            if os.path.dirname(args.destination) != "":
+                fs_utils.mkdir_p(os.path.dirname(args.destination))
         except Exception as e:
             raise Exception(f"Failed to create destination directory: {str(e)}")
 
-        for src in src_paths:
-            if src.endswith(timestamp_proxy.TG_TIMESTAMP_PROXY_EXTENSION):
-                # This special timestamp file does not need to be copied.
-                continue
-            try:
-                fs_utils.copy(src, dst)
-            except Exception as e:
-                raise Exception(f"Failed to copy {src} to {dst}: {str(e)}")
+        try:
+            fs_utils.copy(args.source, args.destination)
+        except Exception as e:
+            raise Exception(
+                f"Failed to copy {args.source} to {args.destination}: {str(e)}"
+            )
 
         # Touch the tg_timestamp_proxy_file if specified.
         timestamp_proxy.touch_timestamp_proxy_file(args.tg_timestamp_proxy_file)

@@ -6,13 +6,16 @@
 #
 import argparse
 import json
-import re
+from typing import Optional
 
 
 class ArgumentInfo(argparse.Namespace):
     def __init__(self):
         self.input_string: str
-        self.delimiter: list[str]
+        # The delimiter that separates the source and the target.
+        self.src_dest_delimiter: Optional[str] = None
+        # The delimiter that separates the source_base.
+        self.src_base_delimiter: Optional[str] = None
 
 
 def main():
@@ -23,35 +26,60 @@ def main():
         "--input-string", type=str, required=True, help="String to be split."
     )
     parser.add_argument(
-        "--delimiter",
+        "--src-dest-delimiter",
         type=str,
-        required=True,
-        action="append",
-        help="Delimiter to split the string.",
+        required=False,
+        help="Delimiter between source and destination.",
+    )
+    parser.add_argument(
+        "--src-base-delimiter",
+        type=str,
+        required=False,
+        help="Delimiter for source base.",
     )
 
     arg_info = ArgumentInfo()
     args = parser.parse_args(namespace=arg_info)
 
-    # Combine all delimiters into a single regular expression pattern.
-    combined_delimiter = "|".join(map(re.escape, args.delimiter))
+    source_base: Optional[str] = None
+    source: str = ""
+    destination: Optional[str] = None
 
-    parts = re.split(combined_delimiter, args.input_string)
+    remaining_string = args.input_string
 
-    response = {}
+    # Handle source_base delimiter if specified.
+    if args.src_base_delimiter:
+        parts = remaining_string.split(args.src_base_delimiter, 1)
+        if len(parts) == 2:
+            source_base, remaining_string = parts
+        else:
+            source_base = None
 
-    # Check if the delimiter was found in the input string.
-    if len(parts) == 1 and parts[0] == args.input_string:
-        # Delimiter not found, treating the whole string as both source and
-        # destination.
-        response["sources"] = [args.input_string]
-        response["destination"] = args.input_string
+    # Handle src/dest delimiter if specified.
+    if args.src_dest_delimiter:
+        parts = remaining_string.split(args.src_dest_delimiter, 1)
+        if len(parts) == 2:
+            source_part, destination = parts
+        else:
+            source_part = remaining_string
+            destination = None
     else:
-        # Assume the last part is the destination, and the rest are sources.
-        response["sources"] = parts[:-1]
-        response["destination"] = parts[-1]
+        source_part = remaining_string
+        destination = None
 
-    print(json.dumps(response, ensure_ascii=False))
+    # Handle source delimiter if specified.
+    source = source_part
+
+    if destination is None:
+        destination = source
+
+    response = {
+        "source_base": source_base if source_base is not None else "",
+        "source": source,
+        "destination": destination,
+    }
+
+    print(json.dumps(response, indent=2))
 
 
 if __name__ == "__main__":
