@@ -93,10 +93,10 @@ def main():
         result_dests_abs_path.append(result_dest_abs_path)
 
     output = {
-        "srcs": result_srcs,
-        "srcs_abs_path": result_srcs_abs_path,
-        "dests": result_dests,
-        "dests_abs_path": result_dests_abs_path,
+        "sources": result_srcs,
+        "sources_abs_path": result_srcs_abs_path,
+        "destinations": result_dests,
+        "destinations_abs_path": result_dests_abs_path,
     }
 
     json_output = json.dumps(output, indent=2)
