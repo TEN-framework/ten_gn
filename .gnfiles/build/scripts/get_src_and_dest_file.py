@@ -7,6 +7,7 @@
 import argparse
 import json
 from typing import Optional
+from dataclasses import dataclass, asdict
 
 
 class ArgumentInfo(argparse.Namespace):
@@ -18,7 +19,58 @@ class ArgumentInfo(argparse.Namespace):
         self.src_base_delimiter: Optional[str] = None
 
 
-def main():
+@dataclass
+class SrcDestInfo:
+    source_base: str
+    source: str
+    destination: str
+
+
+def get_src_and_dest_file(
+    input_string: str,
+    src_base_delimiter: Optional[str],
+    src_dest_delimiter: Optional[str],
+) -> SrcDestInfo:
+    source_base: Optional[str] = None
+    source: str = ""
+    destination: Optional[str] = None
+
+    remaining_string = input_string
+
+    # Handle source_base delimiter if specified.
+    if src_base_delimiter:
+        parts = remaining_string.split(src_base_delimiter, 1)
+        if len(parts) == 2:
+            source_base, remaining_string = parts
+        else:
+            source_base = None
+
+    # Handle src/dest delimiter if specified.
+    if src_dest_delimiter:
+        parts = remaining_string.split(src_dest_delimiter, 1)
+        if len(parts) == 2:
+            source_part, destination = parts
+        else:
+            source_part = remaining_string
+            destination = None
+    else:
+        source_part = remaining_string
+        destination = None
+
+    # Handle source delimiter if specified.
+    source = source_part
+
+    if destination is None:
+        destination = source
+
+    return SrcDestInfo(
+        source_base=source_base if source_base is not None else "",
+        source=source,
+        destination=destination,
+    )
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Split an input string and return JSON of parts."
     )
@@ -41,46 +93,8 @@ def main():
     arg_info = ArgumentInfo()
     args = parser.parse_args(namespace=arg_info)
 
-    source_base: Optional[str] = None
-    source: str = ""
-    destination: Optional[str] = None
+    result = get_src_and_dest_file(
+        args.input_string, args.src_base_delimiter, args.src_dest_delimiter
+    )
 
-    remaining_string = args.input_string
-
-    # Handle source_base delimiter if specified.
-    if args.src_base_delimiter:
-        parts = remaining_string.split(args.src_base_delimiter, 1)
-        if len(parts) == 2:
-            source_base, remaining_string = parts
-        else:
-            source_base = None
-
-    # Handle src/dest delimiter if specified.
-    if args.src_dest_delimiter:
-        parts = remaining_string.split(args.src_dest_delimiter, 1)
-        if len(parts) == 2:
-            source_part, destination = parts
-        else:
-            source_part = remaining_string
-            destination = None
-    else:
-        source_part = remaining_string
-        destination = None
-
-    # Handle source delimiter if specified.
-    source = source_part
-
-    if destination is None:
-        destination = source
-
-    response = {
-        "source_base": source_base if source_base is not None else "",
-        "source": source,
-        "destination": destination,
-    }
-
-    print(json.dumps(response, indent=2))
-
-
-if __name__ == "__main__":
-    main()
+    print(json.dumps(asdict(result), indent=2))
