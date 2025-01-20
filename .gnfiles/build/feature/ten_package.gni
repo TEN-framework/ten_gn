@@ -227,6 +227,7 @@ template("ten_package") {
             "${target_dir}/${output_dir_related_to_package_output_root_dir}/${real_build_output_file_name}"),
         "--tg-timestamp-proxy-file",
         rebase_path(unique_copy_build_result_timestamp_proxy_file),
+        "--files-only",
       ]
 
       deps = [ ":${unique_build_target_name}" ]
@@ -254,8 +255,6 @@ template("ten_package") {
                         "${resource}",
                         "--src-dest-delimiter",
                         "=>",
-                        "--src-base-delimiter",
-                        ":",
                       ],
                       "json")
 
@@ -277,6 +276,7 @@ template("ten_package") {
           rebase_path(resource_src_path),
           "--destination",
           rebase_path("${package_output_root_dir}/${resource_dest_path}"),
+          "--files-only",
         ]
 
         forward_variables_from(invoker,
@@ -320,8 +320,6 @@ template("ten_package") {
                       "protocol",
                       "--pkg-type",
                       "addon_loader",
-                      "--pkg-type",
-                      "system",
                     ],
                     "list lines")
 

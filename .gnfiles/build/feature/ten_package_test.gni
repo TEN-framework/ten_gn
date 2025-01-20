@@ -130,6 +130,7 @@ template("ten_package_test") {
           "${target_dir}/${output_dir_related_to_package_output_root_dir}/${real_build_output_file_name}"),
       "--tg-timestamp-proxy-file",
       rebase_path(unique_copy_build_result_timestamp_proxy_file),
+      "--files-only",
     ]
 
     deps = [ ":${unique_build_target_name}" ]
