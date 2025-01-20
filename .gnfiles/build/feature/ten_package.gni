@@ -215,7 +215,7 @@ template("ten_package") {
       script = "//.gnfiles/build/scripts/copy_fs_entry.py"
 
       inputs = [ "${build_output_dir}/${real_build_output_file_name}" ]
-      outputs = [ "${unique_copy_build_result_timestamp_proxy_file}" ]
+      outputs = [ unique_copy_build_result_timestamp_proxy_file ]
 
       target_dir = get_label_info(":${unique_build_target_name}", "dir")
 
