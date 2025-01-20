@@ -320,8 +320,6 @@ template("ten_package") {
                       "protocol",
                       "--pkg-type",
                       "addon_loader",
-                      "--pkg-type",
-                      "system",
                     ],
                     "list lines")
 
