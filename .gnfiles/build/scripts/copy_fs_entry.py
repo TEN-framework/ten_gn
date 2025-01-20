@@ -15,6 +15,7 @@ class ArgumentInfo(argparse.Namespace):
         self.source: str
         self.destination: str
         self.tg_timestamp_proxy_file: Optional[str] = None
+        self.files_only: bool = False
 
 
 def main():
@@ -28,11 +29,33 @@ def main():
         required=False,
         help="Destination file path",
     )
+    parser.add_argument(
+        "--files-only",
+        action="store_true",
+        default=False,
+        help="Ensure source and destination are files",
+    )
 
     arg_info = ArgumentInfo()
     args = parser.parse_args(namespace=arg_info)
 
     try:
+        if args.files_only:
+            if not os.path.isfile(args.source):
+                raise Exception(
+                    f"Source '{args.source}' is not a file, "
+                    "but --files-only is specified."
+                )
+
+            # Check if the destination already exists and is a directory.
+            if os.path.exists(args.destination) and os.path.isdir(
+                args.destination
+            ):
+                raise Exception(
+                    f"Destination '{args.destination}' is a directory, "
+                    "but --files-only is specified."
+                )
+
         # Check if the source is existed.
         if not os.path.exists(args.source):
             raise Exception(f"{args.source} does not exist")
