@@ -9,34 +9,44 @@ import("//.gnfiles/build/feature/base_options.gni")
 template("ten_package") {
   _target_name = target_name
 
-  package_output_root_dir_name = _target_name
-  if (defined(invoker.package_output_root_dir_name) &&
-      invoker.package_output_root_dir_name != "") {
-    package_output_root_dir_name = invoker.package_output_root_dir_name
+  # Determine if package_output_root_dir is needed.
+  should_set_package_output_root_dir = false
+  if (defined(invoker.enable_build) && invoker.enable_build) {
+    should_set_package_output_root_dir = true
+  }
+  if (defined(invoker.resources) && invoker.resources != []) {
+    should_set_package_output_root_dir = true
   }
 
-  # Determine the package_output_root_dir of the TEN package.
-  #
-  # The main purpose of this is to quickly find the desired package in the out
-  # folder without making the out folder too cluttered. And different types of
-  # packages can have the same name, so splitting sub-folders based on type to
-  # create a namespace-like effect is also relatively appropriate.
-  if (invoker.package_kind == "app") {
-    package_output_root_dir =
-        "${root_out_dir}/app/${package_output_root_dir_name}"
-  } else if (invoker.package_kind == "protocol") {
-    package_output_root_dir =
-        "${root_out_dir}/ten_packages/protocol/${package_output_root_dir_name}"
-  } else if (invoker.package_kind == "addon_loader") {
-    package_output_root_dir = "${root_out_dir}/ten_packages/addon_loader/${package_output_root_dir_name}"
-  } else if (invoker.package_kind == "extension") {
-    package_output_root_dir =
-        "${root_out_dir}/ten_packages/extension/${package_output_root_dir_name}"
-  } else if (invoker.package_kind == "system") {
-    package_output_root_dir =
-        "${root_out_dir}/ten_packages/system/${package_output_root_dir_name}"
-  } else if (invoker.package_kind == "custom") {
-    package_output_root_dir = "${root_out_dir}/${package_output_root_dir_name}"
+  if (should_set_package_output_root_dir) {
+    package_output_root_dir_name = _target_name
+    if (defined(invoker.package_output_root_dir_name) &&
+        invoker.package_output_root_dir_name != "") {
+      package_output_root_dir_name = invoker.package_output_root_dir_name
+    }
+
+    # Determine the package_output_root_dir of the TEN package.
+    #
+    # The main purpose of this is to quickly find the desired package in the out
+    # folder without making the out folder too cluttered. And different types of
+    # packages can have the same name, so splitting sub-folders based on type to
+    # create a namespace-like effect is also relatively appropriate.
+    if (invoker.package_kind == "app") {
+      package_output_root_dir =
+          "${root_out_dir}/app/${package_output_root_dir_name}"
+    } else if (invoker.package_kind == "protocol") {
+      package_output_root_dir = "${root_out_dir}/ten_packages/protocol/${package_output_root_dir_name}"
+    } else if (invoker.package_kind == "addon_loader") {
+      package_output_root_dir = "${root_out_dir}/ten_packages/addon_loader/${package_output_root_dir_name}"
+    } else if (invoker.package_kind == "extension") {
+      package_output_root_dir = "${root_out_dir}/ten_packages/extension/${package_output_root_dir_name}"
+    } else if (invoker.package_kind == "system") {
+      package_output_root_dir =
+          "${root_out_dir}/ten_packages/system/${package_output_root_dir_name}"
+    } else if (invoker.package_kind == "custom") {
+      package_output_root_dir =
+          "${root_out_dir}/${package_output_root_dir_name}"
+    }
   }
 
   # Specify the necessary steps which are used in group("<target_name>") in the
@@ -45,6 +55,11 @@ template("ten_package") {
 
   # Check if we need to build the package.
   if (defined(invoker.enable_build) && invoker.enable_build == true) {
+    # Ensure package_output_root_dir is defined before using it.
+    if (!should_set_package_output_root_dir) {
+      error("package_output_root_dir must be set when enable_build is true.")
+    }
+
     if (invoker.package_kind == "app") {
       build_type = "executable"
     } else if (invoker.package_kind == "protocol" ||
@@ -242,6 +257,11 @@ template("ten_package") {
   # sources to specified destinations. All the destination folders of
   # 'resources' are based on <package_output_root_dir>.
   if (defined(invoker.resources) && invoker.resources != []) {
+    # Ensure package_output_root_dir is defined before using it.
+    if (!should_set_package_output_root_dir) {
+      error("package_output_root_dir must be set when resources are defined.")
+    }
+
     resource_index = 0
 
     foreach(resource, invoker.resources) {
