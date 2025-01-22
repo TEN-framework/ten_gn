@@ -42,6 +42,8 @@ if __name__ == "__main__":
         )
     )
     parser.add_argument("path", type=str, help="The path of the file to touch.")
-    args = parser.parse_args()
+
+    arg_info = ArgumentInfo()
+    args = parser.parse_args(namespace=arg_info)
 
     touch(args.path)
