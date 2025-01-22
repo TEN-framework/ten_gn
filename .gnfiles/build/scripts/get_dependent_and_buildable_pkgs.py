@@ -45,14 +45,7 @@ def load_manifest(path: str) -> dict:
     return {}
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--app-base-dir", type=str, required=True)
-    parser.add_argument("--pkg-base-dir", type=str, required=True)
-    parser.add_argument("--pkg-type", type=str, required=True, action="append")
-    arg_info = ArgumentInfo()
-    args = parser.parse_args(namespace=arg_info)
-
+def get_dependent_and_buildable_pkgs(args: ArgumentInfo) -> None:
     dependencies = load_manifest_dependencies(args.pkg_base_dir)
 
     ten_pkg_type_dirs_info = {
@@ -127,3 +120,16 @@ if __name__ == "__main__":
     # Print the matching sub-folders.
     for ten_pkg_dir in matching_folders:
         print(ten_pkg_dir)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--app-base-dir", type=str, required=True)
+    parser.add_argument("--pkg-base-dir", type=str, required=True)
+    parser.add_argument("--pkg-type", type=str, required=True, action="append")
+
+    arg_info = ArgumentInfo()
+    args = parser.parse_args(namespace=arg_info)
+
+    get_dependent_and_buildable_pkgs(args)
