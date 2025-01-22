@@ -4,11 +4,18 @@
 # Licensed under the Apache License, Version 2.0, with certain conditions.
 # Refer to the "LICENSE" file in the root directory for more information.
 #
-import sys
 import os
+import sys
+import argparse
+
+
+class ArgumentInfo(argparse.Namespace):
+    def __init__(self):
+        self.path: str
 
 
 def touch(path):
+    # Create all the parent folders.
     parent_dir = os.path.dirname(path)
     if parent_dir and not os.path.exists(parent_dir):
         os.makedirs(parent_dir, exist_ok=True)
@@ -16,15 +23,25 @@ def touch(path):
     with open(path, "a"):
         try:
             os.utime(path, follow_symlinks=False)
-        except Exception:
+        except TypeError:
             try:
                 # If follow_symlinks parameter is not supported, fall back to
                 # default behavior
                 os.utime(path)
             except Exception:
-                exit(1)
+                sys.exit(1)
+        except Exception:
+            sys.exit(1)
 
 
 if __name__ == "__main__":
-    path = sys.argv[1]
-    touch(path)
+    parser = argparse.ArgumentParser(
+        description=(
+            "Create a file if it does not exist and update its access and "
+            "modification times."
+        )
+    )
+    parser.add_argument("path", type=str, help="The path of the file to touch.")
+    args = parser.parse_args()
+
+    touch(args.path)

@@ -112,13 +112,13 @@ template("ten_package_test") {
 
   # Copy the build results to the final destination.
   unique_copy_build_result_target_name = "${_target_name}_copy_build_result"
-  unique_copy_build_result_timestamp_proxy_file =
+  unique_copy_build_result_tg_timestamp_proxy_file =
       "${target_gen_dir}/${unique_copy_build_result_target_name}"
   action("${unique_copy_build_result_target_name}") {
     script = "//.gnfiles/build/scripts/copy_fs_entry.py"
 
     inputs = [ "${build_output_dir}/${real_build_output_file_name}" ]
-    outputs = [ unique_copy_build_result_timestamp_proxy_file ]
+    outputs = [ unique_copy_build_result_tg_timestamp_proxy_file ]
 
     target_dir = get_label_info(":${unique_build_target_name}", "dir")
 
@@ -129,7 +129,7 @@ template("ten_package_test") {
       rebase_path(
           "${target_dir}/${output_dir_related_to_package_output_root_dir}/${real_build_output_file_name}"),
       "--tg-timestamp-proxy-file",
-      rebase_path(unique_copy_build_result_timestamp_proxy_file),
+      rebase_path(unique_copy_build_result_tg_timestamp_proxy_file),
       "--files-only",
     ]
 
