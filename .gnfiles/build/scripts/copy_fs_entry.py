@@ -63,7 +63,7 @@ def main():
         try:
             # Ensure the destination folder, if specified, does exist.
             if os.path.dirname(args.destination) != "":
-                fs_utils.mkdir_p(os.path.dirname(args.destination))
+                os.makedirs(os.path.dirname(args.destination), exist_ok=True)
         except Exception as e:
             raise Exception(f"Failed to create destination directory: {str(e)}")
 

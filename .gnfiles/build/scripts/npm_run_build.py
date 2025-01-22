@@ -59,7 +59,7 @@ class NpmRunBuild:
         for src in sources:
             dst = os.path.relpath(src, tsconfig_dir)
             dst = os.path.join(self.args.out_dir, dst)  # build/../src/**/*
-            fs_utils.mkdir_p(os.path.dirname(dst))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
             fs_utils.copy(src, dst)
 
         fs_utils.copy(
@@ -140,7 +140,7 @@ class NpmRunBuild:
 
     def run(self):
         # Create the output directory if it does not exist.
-        fs_utils.mkdir_p(os.path.join(self.args.out_dir, "build"))
+        os.makedirs(os.path.join(self.args.out_dir, "build"), exist_ok=True)
 
         # Record the current working directory path and switch to the output
         # directory.
