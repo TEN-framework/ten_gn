@@ -14,7 +14,7 @@ class ArgumentInfo(argparse.Namespace):
         self.path: str
 
 
-def touch(path):
+def touch(path: str):
     # Create all the parent folders.
     parent_dir = os.path.dirname(path)
     if parent_dir and not os.path.exists(parent_dir):
@@ -23,15 +23,13 @@ def touch(path):
     with open(path, "a"):
         try:
             os.utime(path, follow_symlinks=False)
-        except TypeError:
+        except Exception:
             try:
                 # If follow_symlinks parameter is not supported, fall back to
                 # default behavior
                 os.utime(path)
             except Exception:
                 sys.exit(1)
-        except Exception:
-            sys.exit(1)
 
 
 if __name__ == "__main__":
