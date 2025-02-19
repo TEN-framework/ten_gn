@@ -13,6 +13,8 @@ import json
 
 class ArgumentInfo(argparse.Namespace):
     def __init__(self):
+        super().__init__()
+
         self.dir: list[str]
         self.dir_base: list[str] = []
         self.recursive: bool
@@ -24,9 +26,9 @@ def glob_file(
 ) -> None:
     output = []
 
-    for index, dir in enumerate(dirs):
+    for index, item in enumerate(dirs):
         dir_base = dir_bases[index] if index < len(dir_bases) else ""
-        for v in glob.glob(dir, recursive=recursive):
+        for v in glob.glob(item, recursive=recursive):
             if only_file:
                 if not os.path.isfile(v):
                     continue

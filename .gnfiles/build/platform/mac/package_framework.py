@@ -35,11 +35,11 @@ def Main():
             os.path.join(args.framework, VERSIONS, args.version, HEADERS),
             os.path.join(args.framework, VERSIONS, args.version, MODULES),
         ]
-        for dir in target_dirs:
+        for target_dir in target_dirs:
             try:
-                if os.path.isfile(dir):
-                    os.remove(dir)
-                os.makedirs(dir)
+                if os.path.isfile(target_dir):
+                    os.remove(target_dir)
+                os.makedirs(target_dir)
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise e
@@ -59,7 +59,7 @@ def Main():
 
     # Write out a stamp file.
     if args.stamp:
-        with open(args.stamp, "w") as f:
+        with open(args.stamp, "w", encoding="utf-8") as f:
             f.write(str(args))
 
     # the source must be absolute path
@@ -89,7 +89,7 @@ def Main():
         module_template += "  export *\n"
         module_template += "}\n"
         with open(
-            os.path.join(module_path, "module.modulemap"), "w"
+            os.path.join(module_path, "module.modulemap"), "w", encoding="utf-8"
         ) as module_file:
             module_file.write(module_template)
     return 0

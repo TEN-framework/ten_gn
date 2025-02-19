@@ -31,7 +31,7 @@ def proper_glob(src_pattern: str) -> list[str]:
 
 
 def read_ts_config(file_name):
-    with open(file_name) as f:
+    with open(file_name, "r", encoding="utf-8") as f:
         ts_config = f.read()
 
     # Remove comments and redundant commas before JSON parsing, because they
@@ -74,7 +74,7 @@ def read_ts_config(file_name):
 # the `include` and `exclude` fields of the `tsconfig.json` file.
 def glob_ts_sources(ts_config_file, ts_config, out_dir=None):
     # Remember current working directory so that we can come back here.
-    dir = os.path.abspath(".")
+    cwd = os.path.abspath(".")
 
     try:
         source_folder = os.path.dirname(os.path.abspath(ts_config_file))
@@ -114,7 +114,7 @@ def glob_ts_sources(ts_config_file, ts_config, out_dir=None):
         return results
     finally:
         # Go back to the original working directory.
-        os.chdir(dir)
+        os.chdir(cwd)
 
 
 if __name__ == "__main__":

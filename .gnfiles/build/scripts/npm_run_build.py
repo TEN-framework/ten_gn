@@ -6,14 +6,29 @@
 #
 import json
 import os
-from importlib import machinery  # Use for dynamic loading of modules.
+import importlib.util  # Use for dynamic loading of modules.
 import argparse
 from build.scripts import fs_utils, log, cmd_exec
 
-glob_tsconfig_files = machinery.SourceFileLoader(
-    "glob_tsconfig_files",
-    os.path.dirname(os.path.abspath(__file__)) + "/glob_tsconfig_files.py",
-).load_module()
+module_name = "glob_tsconfig_files"
+module_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "glob_tsconfig_files.py"
+)
+
+# Get the module's spec.
+spec = importlib.util.spec_from_file_location(module_name, module_path)
+if spec is None:
+    raise ImportError(
+        f"Could not load spec for module {module_name} from {module_path}"
+    )
+
+glob_tsconfig_files = importlib.util.module_from_spec(spec)
+
+if spec.loader is None:
+    raise ImportError(
+        f"Could not load module {module_name} due to missing loader"
+    )
+spec.loader.exec_module(glob_tsconfig_files)
 
 
 class NpmRunBuild:
@@ -31,9 +46,9 @@ class NpmRunBuild:
             f"  remove_src: {args.remove_src}\n"
         )
 
-    def show_extra_log(self, str: str) -> None:
+    def show_extra_log(self, msg: str) -> None:
         if self.args.log_level >= 1:
-            log.info(str)
+            log.info(msg)
 
     # Synchronize the source files to the specified output directory `out_dir`
     # based on the configuration in the `tsconfig.json` file.
@@ -88,7 +103,7 @@ class NpmRunBuild:
 
         out_tsconfig = self.args.out_dir + "/tsconfig.json"
 
-        with open(out_tsconfig, "w") as f:
+        with open(out_tsconfig, "w", encoding="utf-8") as f:
             log.info("Dump {0}".format(out_tsconfig))
             json.dump(tsconfig_info, f)
 
@@ -131,10 +146,14 @@ class NpmRunBuild:
         if self.args.library_path:
             # Write path to path.json, which can be used by webpack or other
             # typescript build tool.
-            with open(os.path.join(self.args.out_dir, "path.json"), "w") as f:
+            with open(
+                os.path.join(self.args.out_dir, "path.json"),
+                "w",
+                encoding="utf-8",
+            ) as f:
                 path_content = {}
                 path_content["PROD_APP_DIR"] = os.path.dirname(
-                    args.library_path
+                    self.args.library_path
                 )
                 json.dump(path_content, f)
 

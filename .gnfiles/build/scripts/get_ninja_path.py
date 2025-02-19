@@ -11,7 +11,7 @@ import platform
 
 def main(argv):
     if len(argv) != 0:
-        raise Exception("Invalid parameter")
+        raise ValueError("Invalid parameter")
     dir_name = os.path.dirname(os.path.abspath(__file__))
 
     dir_name = os.path.join(dir_name, "..", "..", "bin")

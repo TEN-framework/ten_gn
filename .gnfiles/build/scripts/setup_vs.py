@@ -29,30 +29,30 @@ def GetVsPath(version: str) -> str:
             if os.path.exists(vs_path):
                 return vs_path
 
-    raise Exception("No Visual Studio {} detected".format(version))
+    raise RuntimeError("No Visual Studio {} detected".format(version))
 
 
 def main(argc: int, argv: list[str]) -> int:
     if argc != 4:
-        raise Exception(
+        raise ValueError(
             "Wrong argument: setup_vs.py [vs version] [host cpu] [target cpu]"
             " [output file]"
         )
 
     vs_version = argv[0]
     if vs_version not in ["2015", "2017", "2019", "2022"]:
-        raise Exception("Only support vs 2015, 2017, 2019 and 2022")
+        raise ValueError("Only support vs 2015, 2017, 2019 and 2022")
 
     host_cpu = argv[1]
     if host_cpu not in ["x86", "x64"]:
-        raise Exception(
+        raise ValueError(
             "Currently only support x86 and x64, arm for Windows will be"
             " supported later"
         )
 
     target_cpu = argv[2]
     if target_cpu not in ["x86", "x64", "arm64"]:
-        raise Exception(
+        raise ValueError(
             "Currently only support x86, x64 and arm64, arm for Windows will be"
             " supported later"
         )
@@ -94,14 +94,14 @@ def main(argc: int, argv: list[str]) -> int:
 
     tmp_bat = os.path.abspath(os.path.join(output_dir, "____tmp.bat"))
     tmp_env = os.path.abspath(os.path.join(output_dir, "____tmp.txt"))
-    with open(tmp_bat, "w") as f:
+    with open(tmp_bat, "w", encoding="utf-8") as f:
         f.writelines(
             ['call "{}"\n'.format(vcvarbat), 'set > "{}"\n'.format(tmp_env)]
         )
     subprocess.check_output(tmp_bat)
     os.unlink(tmp_bat)
     if not os.path.exists(tmp_env):
-        raise Exception("Setup environment fail")
+        raise RuntimeError("Setup environment fail")
 
     with open(tmp_env, "r", encoding="utf-8") as in_file:
         with open(output_file, "wb") as out_file:

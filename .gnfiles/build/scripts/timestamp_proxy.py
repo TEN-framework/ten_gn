@@ -36,7 +36,9 @@ def touch_timestamp_proxy_file(path: Optional[str]) -> None:
         try:
             touch.touch(path)
         except Exception as e:
-            raise Exception(f"Failed to touch timestamp proxy file: {str(e)}")
+            raise RuntimeError(
+                f"Failed to touch timestamp proxy file: {str(e)}"
+            ) from e
 
 
 def remove_timestamp_proxy_file(path: Optional[str]) -> None:
@@ -54,4 +56,6 @@ def remove_timestamp_proxy_file(path: Optional[str]) -> None:
         try:
             os.remove(path)
         except Exception as e:
-            raise Exception(f"Failed to remove timestamp proxy file: {str(e)}")
+            raise OSError(
+                f"Failed to remove timestamp proxy file: {str(e)}"
+            ) from e

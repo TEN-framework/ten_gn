@@ -4,6 +4,7 @@
 # Licensed under the Apache License, Version 2.0, with certain conditions.
 # Refer to the "LICENSE" file in the root directory for more information.
 #
+import abc
 import argparse
 import plistlib
 import os
@@ -52,10 +53,11 @@ def InterpolateString(value, substitutions):
         variable = match.group("id")
         if variable not in substitutions:
             raise SubstitutionError(variable)
-        # Some values need to be identifier and thus the variables references may
-        # contains :modifier attributes to indicate how they should be converted
-        # to identifiers ("identifier" replaces all invalid characters by '_' and
-        # "rfc1034identifier" replaces them by "-" to make valid URI too).
+        # Some values need to be identifier and thus the variables references
+        # may contains :modifier attributes to indicate how they should be
+        # converted to identifiers ("identifier" replaces all invalid characters
+        # by '_' and "rfc1034identifier" replaces them by "-" to make valid URI
+        # too).
         modifier = match.group("modifier")
         if modifier == ":identifier":
             return INVALID_CHARACTER_REGEXP.sub("_", substitutions[variable])
@@ -102,7 +104,7 @@ def LoadPList(path):
         os.unlink(name)
 
 
-def SavePList(path, format, data):
+def SavePList(path, format_type, data):
     """Saves |data| as a Plist to |path| in the specified |format|."""
     fd, name = tempfile.mkstemp()
     try:
@@ -114,7 +116,9 @@ def SavePList(path, format, data):
             os.unlink(path)
         with os.fdopen(fd, "wb") as f:
             plistlib.dump(data, f)
-        subprocess.check_call(["plutil", "-convert", format, "-o", path, name])
+        subprocess.check_call(
+            ["plutil", "-convert", format_type, "-o", path, name]
+        )
     finally:
         os.unlink(name)
 
@@ -148,8 +152,26 @@ def MergePList(plist1, plist2):
     return result
 
 
-class Action(object):
+class Action(abc.ABC):
     """Class implementing one action supported by the script."""
+
+    name: str
+    help: str
+
+    @classmethod
+    @abc.abstractmethod
+    def _Register(cls, parser: argparse.ArgumentParser) -> None:
+        """
+        Subclasses need to implement this method to register their own
+        parameters.
+        """
+
+    @classmethod
+    @abc.abstractmethod
+    def _Execute(cls, args: argparse.Namespace) -> None:
+        """
+        Subclasses need to implement this method to perform specific operations.
+        """
 
     @classmethod
     def Register(cls, subparsers):

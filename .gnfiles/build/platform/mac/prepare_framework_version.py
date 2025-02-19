@@ -19,7 +19,7 @@ import sys
 def PrepareFrameworkVersion(version_file, framework_root_dir, version):
     # Test what the current framework version is. Stop if it is up-to-date.
     try:
-        with open(version_file, "r") as f:
+        with open(version_file, "r", encoding="utf-8") as f:
             current_version = f.read()
             if current_version == version:
                 return
@@ -36,7 +36,7 @@ def PrepareFrameworkVersion(version_file, framework_root_dir, version):
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
 
-    with open(version_file, "w+") as f:
+    with open(version_file, "w+", encoding="utf-8") as f:
         f.write(version)
 
 
