@@ -29,8 +29,8 @@ def setup_logger(logger):
 
     def decorate_emit(fn):
         # Add methods we need to the class
-        def new(*args):
-            levelno = args[0].levelno
+        def new(record: logging.LogRecord) -> None:
+            levelno = record.levelno
             if levelno >= logging.CRITICAL:
                 color = ColorCodes.red
             elif levelno >= logging.ERROR:
@@ -45,16 +45,17 @@ def setup_logger(logger):
                 color = ColorCodes.normal
 
             # Add colored *** in the beginning of the message
-            args[0].msg = "{0}***{1} {2}".format(
-                color, ColorCodes.normal, args[0].msg
+            record.msg = "{0}***{1} {2}".format(
+                color, ColorCodes.normal, record.msg
             )
 
             # Bolder each args of message
-            args[0].args = tuple(
-                "\x1b[1m" + arg + "\x1b[0m" for arg in args[0].args
-            )
+            if record.args:
+                record.args = tuple(
+                    f"\x1b[1m{arg}\x1b[0m" for arg in record.args
+                )
 
-            return fn(*args)
+            return fn(record)
 
         return new
 

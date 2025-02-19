@@ -163,7 +163,7 @@ def run_cmd(cmd: str, show_output: bool = True, echo: bool = False) -> int:
     if echo:
         print(f">>> {cmd}")
 
-    dev_null = open(os.devnull, "w")
+    dev_null = open(os.devnull, "w", encoding="utf-8")
     if show_output:
         stderr = sys.stderr
         stdout = sys.stdout
@@ -209,7 +209,7 @@ def run_and_redirect_output(cmd: str, output_file: str) -> None:
         output_file: The file to which to redirect the output.
     """
     with open(output_file, "w", encoding="utf-8") as f:
-        subprocess.run(cmd, shell=True, stdout=f, stderr=f)
+        subprocess.run(cmd, shell=True, stdout=f, stderr=f, check=True)
 
 
 def get_cmd_output(cmd: str, echo: bool = False) -> Tuple[int, str]:
@@ -809,7 +809,7 @@ def setup_env() -> None:
     os.environ["NINJA_STATUS"] = "[%f/%t](%r) "
 
 
-def main(argc: int, argv: list[str]) -> int:
+def main(argv: list[str]) -> int:
     """This is the main function that orchestrates the entire script.
 
     = It first checks the Python version.
@@ -916,4 +916,4 @@ def main(argc: int, argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    main(len(sys.argv) - 1, sys.argv[1:])
+    main(sys.argv[1:])

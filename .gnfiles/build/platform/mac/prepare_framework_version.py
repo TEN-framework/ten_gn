@@ -36,7 +36,7 @@ def PrepareFrameworkVersion(version_file, framework_root_dir, version):
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
 
-    with open(version_file, "w+") as f:
+    with open(version_file, "w+", encoding="utf-8") as f:
         f.write(version)
 
 

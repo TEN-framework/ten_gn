@@ -18,7 +18,7 @@ def split_objs(ar, tmp_file, objs):
     command = '"{0}" qc {1} {2}'.format(ar, tmp_file, " ".join(objs))
     if sys.platform == "win32" and len(command) >= 8191:
         split_objs(ar, tmp_file, objs[: len(objs) / 2])
-        split_objs(ar, tmp_file, objs[len(objs) / 2 :])
+        split_objs(ar, tmp_file, objs[len(objs) / 2 :])  # noqa
     else:
         cmd_exec.get_cmd_output(command)
 

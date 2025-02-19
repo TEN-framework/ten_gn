@@ -44,7 +44,7 @@ def main():
     try:
         if args.files_only:
             if not os.path.isfile(args.source):
-                raise Exception(
+                raise FileNotFoundError(
                     f"Source '{args.source}' is not a file, "
                     "but --files-only is specified."
                 )
@@ -53,28 +53,30 @@ def main():
             if os.path.exists(args.destination) and os.path.isdir(
                 args.destination
             ):
-                raise Exception(
+                raise IsADirectoryError(
                     f"Destination '{args.destination}' is a directory, "
                     "but --files-only is specified."
                 )
 
         # Check if the source is existed.
         if not os.path.exists(args.source):
-            raise Exception(f"{args.source} does not exist")
+            raise FileNotFoundError(f"{args.source} does not exist")
 
         try:
             # Ensure the destination folder, if specified, does exist.
             if os.path.dirname(args.destination) != "":
                 os.makedirs(os.path.dirname(args.destination), exist_ok=True)
         except Exception as e:
-            raise Exception(f"Failed to create destination directory: {str(e)}")
+            raise OSError(
+                f"Failed to create destination directory: {str(e)}"
+            ) from e
 
         try:
             fs_utils.copy(args.source, args.destination)
         except Exception as e:
-            raise Exception(
+            raise RuntimeError(
                 f"Failed to copy {args.source} to {args.destination}: {str(e)}"
-            )
+            ) from e
 
         # Touch the tg_timestamp_proxy_file if specified.
         timestamp_proxy.touch_timestamp_proxy_file(args.tg_timestamp_proxy_file)

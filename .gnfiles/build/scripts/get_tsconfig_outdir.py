@@ -10,7 +10,7 @@ import re
 
 
 def read_ts_config(file_name):
-    with open(file_name) as f:
+    with open(file_name, "r", encoding="utf-8") as f:
         ts_config = f.read()
 
     # Remove comments and redundant commas before JSON parsing, because they

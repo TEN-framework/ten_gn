@@ -22,7 +22,7 @@ def touch(path: str):
     if parent_dir and not os.path.exists(parent_dir):
         os.makedirs(parent_dir, exist_ok=True)
 
-    with open(path, "a"):
+    with open(path, "a", encoding="utf-8"):
         try:
             os.utime(path, follow_symlinks=False)
         except Exception:

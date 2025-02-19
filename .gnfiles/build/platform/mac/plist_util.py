@@ -4,6 +4,7 @@
 # Licensed under the Apache License, Version 2.0, with certain conditions.
 # Refer to the "LICENSE" file in the root directory for more information.
 #
+import abc
 import argparse
 import plistlib
 import os
@@ -151,8 +152,26 @@ def MergePList(plist1, plist2):
     return result
 
 
-class Action(object):
+class Action(abc.ABC):
     """Class implementing one action supported by the script."""
+
+    name: str
+    help: str
+
+    @classmethod
+    @abc.abstractmethod
+    def _Register(cls, parser: argparse.ArgumentParser) -> None:
+        """
+        Subclasses need to implement this method to register their own
+        parameters.
+        """
+
+    @classmethod
+    @abc.abstractmethod
+    def _Execute(cls, args: argparse.Namespace) -> None:
+        """
+        Subclasses need to implement this method to perform specific operations.
+        """
 
     @classmethod
     def Register(cls, subparsers):

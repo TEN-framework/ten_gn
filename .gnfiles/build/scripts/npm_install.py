@@ -65,7 +65,7 @@ class NpmInstall:
             exit(-1)
 
     def install(self):
-        os.chdir(args.output_dir)
+        os.chdir(self.args.output_dir)
         for i in range(3):
             try:
                 if os.path.exists("package-lock.json"):
@@ -121,7 +121,7 @@ class NpmInstall:
                 self.show_extra_log("npm install success.")
                 break
         if not self.is_tsc_exist():
-            raise Exception(
+            raise RuntimeError(
                 "tsc not found in current npm package and global node dir,"
                 " please check."
             )
