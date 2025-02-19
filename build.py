@@ -49,7 +49,7 @@ class CommandAction(argparse.Action):
         separator = values.find(":")
         if separator != -1:
             build_command = values[0:separator]
-            build_target = values[(separator + 1) :]
+            build_target = values[(separator + 1) :]  # noqa
         else:
             build_command = values
             build_target = ""
@@ -208,7 +208,7 @@ def run_and_redirect_output(cmd: str, output_file: str) -> None:
         cmd: The command to run.
         output_file: The file to which to redirect the output.
     """
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         subprocess.run(cmd, shell=True, stdout=f, stderr=f)
 
 
@@ -414,7 +414,7 @@ def write_gn_args(
     """
 
     args_gn = os.path.join(os.getcwd(), all_args.out_dir, "args.gn")
-    with open(args_gn, "w") as f:
+    with open(args_gn, "w", encoding="utf-8") as f:
         # os and cpu and is_debug
         f.write(f'target_os = "{all_args.target_os}"\n')
         f.write(f'target_cpu = "{all_args.target_cpu}"\n')
@@ -449,7 +449,7 @@ def prepare_gn_args(all_args: AllArgumentInfo) -> None:
     # Read the PROJECTCONFIG.gn file and parse out the project configs.
     project_configs = []
     if os.path.exists("PROJECTCONFIG.gn"):
-        with open("PROJECTCONFIG.gn", "r") as f:
+        with open("PROJECTCONFIG.gn", "r", encoding="utf-8") as f:
             for line in f.readlines():
                 project_configs.append(line.strip())
 
@@ -521,7 +521,7 @@ def filter_target(all_args: AllArgumentInfo) -> str:
 
     separator = all_args.build_target.find(":")
     if separator != -1:
-        desired_label_name = all_args.build_target[(separator + 1) :]
+        desired_label_name = all_args.build_target[(separator + 1) :]  # noqa
         desired_label_dir = all_args.build_target[0:separator]
     else:
         desired_label_name = all_args.build_target
@@ -666,9 +666,9 @@ def show_path(all_args: AllArgumentInfo) -> None:
     separator = all_args.build_target.find("=")
     if separator != -1:
         src_label = all_args.build_target[0:separator]
-        dest_label = all_args.build_target[(separator + 1) :]
+        dest_label = all_args.build_target[(separator + 1) :]  # noqa
     else:
-        raise Exception(
+        raise ValueError(
             "'path' command needs a source label and a destination label."
         )
 
@@ -784,7 +784,7 @@ def setup_pythonpath() -> None:
     cwd = os.getcwd()
     config_file_path = os.path.join(cwd, ".tgnconfig.json")
     if os.path.exists(config_file_path):
-        with open(config_file_path, "r") as config_file:
+        with open(config_file_path, "r", encoding="utf-8") as config_file:
             config = json.load(config_file)
 
             extra_pythonpath = config.get("extra_pythonpath", [])
@@ -830,7 +830,7 @@ def main(argc: int, argv: list[str]) -> int:
     # 'extra_args'.
     if "--" in argv:
         main_args_list = argv[: argv.index("--")]
-        extra_args_list = argv[argv.index("--") + 1 :]
+        extra_args_list = argv[argv.index("--") + 1 :]  # noqa
     else:
         main_args_list = argv
         extra_args_list = []

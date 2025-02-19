@@ -11,6 +11,8 @@ import os
 
 class ArgumentInfo(argparse.Namespace):
     def __init__(self):
+        super().__init__()
+
         self.pkg_base_dir: str
         self.app_base_dir: str
         self.pkg_type: list[str]
@@ -30,7 +32,7 @@ def filter_folders_with_buildgn(
 def load_manifest_dependencies(pkg_base_dir: str) -> list[dict]:
     manifest_path = os.path.join(pkg_base_dir, "manifest.json")
     if os.path.isfile(manifest_path):
-        with open(manifest_path, "r") as f:
+        with open(manifest_path, "r", encoding="utf-8") as f:
             manifest_data = json.load(f)
             if "dependencies" in manifest_data:
                 return manifest_data["dependencies"]
@@ -40,7 +42,7 @@ def load_manifest_dependencies(pkg_base_dir: str) -> list[dict]:
 def load_manifest(path: str) -> dict:
     manifest_path = os.path.join(path, "manifest.json")
     if os.path.isfile(manifest_path):
-        with open(manifest_path, "r") as f:
+        with open(manifest_path, "r", encoding="utf-8") as f:
             return json.load(f)
     return {}
 

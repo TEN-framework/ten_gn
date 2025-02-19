@@ -10,6 +10,8 @@ import os
 
 class ArgumentInfo(argparse.Namespace):
     def __init__(self):
+        super().__init__()
+
         self.target: str
         self.dependencies: list[str]
         self.depfile_path: str
@@ -40,7 +42,7 @@ def write_depfile(
         os.makedirs(depfile_folder)
 
     # Write the content to the specified depfile.
-    with open(depfile_path, "w") as depfile:
+    with open(depfile_path, "w", encoding="utf-8") as depfile:
         depfile.write(depfile_content)
 
 

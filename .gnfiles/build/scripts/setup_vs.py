@@ -94,7 +94,7 @@ def main(argc: int, argv: list[str]) -> int:
 
     tmp_bat = os.path.abspath(os.path.join(output_dir, "____tmp.bat"))
     tmp_env = os.path.abspath(os.path.join(output_dir, "____tmp.txt"))
-    with open(tmp_bat, "w") as f:
+    with open(tmp_bat, "w", encoding="utf-8") as f:
         f.writelines(
             ['call "{}"\n'.format(vcvarbat), 'set > "{}"\n'.format(tmp_env)]
         )

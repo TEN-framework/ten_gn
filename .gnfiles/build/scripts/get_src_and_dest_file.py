@@ -12,6 +12,8 @@ from dataclasses import dataclass, asdict
 
 class ArgumentInfo(argparse.Namespace):
     def __init__(self):
+        super().__init__()
+
         self.input_string: str
         # The delimiter that separates the source and the target.
         self.src_dest_delimiter: Optional[str] = None

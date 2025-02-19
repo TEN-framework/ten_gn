@@ -12,6 +12,8 @@ from build.scripts import fs_utils, timestamp_proxy
 
 class ArgumentInfo(argparse.Namespace):
     def __init__(self):
+        super().__init__()
+
         self.source: str
         self.destination: str
         self.tg_timestamp_proxy_file: Optional[str] = None

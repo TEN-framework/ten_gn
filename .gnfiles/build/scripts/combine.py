@@ -42,7 +42,7 @@ def combine(argv):
         deleteFile(tmp_file)
     if os.path.exists(mri_file):
         deleteFile(mri_file)
-    f = open(rspfile, "r")
+    f = open(rspfile, "r", encoding="utf-8")
     contents = f.read()
     f.close()
     all_files = contents.split("\n")
@@ -52,7 +52,7 @@ def combine(argv):
     # combine all .o
     split_objs(ar, tmp_file, objs)
     # then combine all .a
-    fi = open(mri_file, "w")
+    fi = open(mri_file, "w", encoding="utf-8")
     fi.write("create {}\n".format(output))
     if len(objs) != 0:
         fi.write("addlib {}\n".format(tmp_file))

@@ -88,7 +88,7 @@ class NpmRunBuild:
 
         out_tsconfig = self.args.out_dir + "/tsconfig.json"
 
-        with open(out_tsconfig, "w") as f:
+        with open(out_tsconfig, "w", encoding="utf-8") as f:
             log.info("Dump {0}".format(out_tsconfig))
             json.dump(tsconfig_info, f)
 
@@ -131,7 +131,11 @@ class NpmRunBuild:
         if self.args.library_path:
             # Write path to path.json, which can be used by webpack or other
             # typescript build tool.
-            with open(os.path.join(self.args.out_dir, "path.json"), "w") as f:
+            with open(
+                os.path.join(self.args.out_dir, "path.json"),
+                "w",
+                encoding="utf-8",
+            ) as f:
                 path_content = {}
                 path_content["PROD_APP_DIR"] = os.path.dirname(
                     args.library_path

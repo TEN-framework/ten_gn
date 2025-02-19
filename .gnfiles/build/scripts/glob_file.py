@@ -13,6 +13,8 @@ import json
 
 class ArgumentInfo(argparse.Namespace):
     def __init__(self):
+        super().__init__()
+
         self.dir: list[str]
         self.dir_base: list[str] = []
         self.recursive: bool

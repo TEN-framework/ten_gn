@@ -52,10 +52,11 @@ def InterpolateString(value, substitutions):
         variable = match.group("id")
         if variable not in substitutions:
             raise SubstitutionError(variable)
-        # Some values need to be identifier and thus the variables references may
-        # contains :modifier attributes to indicate how they should be converted
-        # to identifiers ("identifier" replaces all invalid characters by '_' and
-        # "rfc1034identifier" replaces them by "-" to make valid URI too).
+        # Some values need to be identifier and thus the variables references
+        # may contains :modifier attributes to indicate how they should be
+        # converted to identifiers ("identifier" replaces all invalid characters
+        # by '_' and "rfc1034identifier" replaces them by "-" to make valid URI
+        # too).
         modifier = match.group("modifier")
         if modifier == ":identifier":
             return INVALID_CHARACTER_REGEXP.sub("_", substitutions[variable])
@@ -102,7 +103,7 @@ def LoadPList(path):
         os.unlink(name)
 
 
-def SavePList(path, format, data):
+def SavePList(path, format_type, data):
     """Saves |data| as a Plist to |path| in the specified |format|."""
     fd, name = tempfile.mkstemp()
     try:
@@ -114,7 +115,9 @@ def SavePList(path, format, data):
             os.unlink(path)
         with os.fdopen(fd, "wb") as f:
             plistlib.dump(data, f)
-        subprocess.check_call(["plutil", "-convert", format, "-o", path, name])
+        subprocess.check_call(
+            ["plutil", "-convert", format_type, "-o", path, name]
+        )
     finally:
         os.unlink(name)
 
