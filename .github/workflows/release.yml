@@ -4,11 +4,12 @@ on:
   release:
     types: [created]
 
+concurrency:
+  group: release-${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
-    concurrency:
-      group: release-${{ github.head_ref }}
-      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
