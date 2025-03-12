@@ -12,7 +12,7 @@ config("debug") {
 
 config("release") {
   defines = [ "NDEBUG" ]
-  cflags = [ "-O3" ]
+  cflags = [ "-O2" ]
 
   # TODO(Wei): Remove this in the future. Currently, because we want to have
   # more information in the release build, such as the backtrace, so enable
