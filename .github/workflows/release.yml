@@ -4,6 +4,11 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: write
+  discussions: write
+  security-events: write
+
 concurrency:
   group: release-${{ github.head_ref }}
   cancel-in-progress: true
