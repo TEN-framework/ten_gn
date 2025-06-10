@@ -198,7 +198,12 @@ template("ten_package") {
         }
       } else {
         pkg_base_dir = get_path_info(_target_name, "dir")
-        app_base_dir = "${pkg_base_dir}/../../../"
+
+        # The package could be in an app folder or a standalone folder.
+        # We prefer to compile independently first, and if there is no system
+        # package installed independently, we try to compile it as part of the
+        # app.
+        app_base_dir = "${pkg_base_dir}/.ten/app/"
 
         used_system_pkgs = exec_script(
                 "//.gnfiles/build/scripts/get_dependent_and_buildable_pkgs.py",
@@ -211,6 +216,21 @@ template("ten_package") {
                   "system",
                 ],
                 "list lines")
+        if (used_system_pkgs == []) {
+          app_base_dir = "${pkg_base_dir}/../../../"
+
+          used_system_pkgs = exec_script(
+                  "//.gnfiles/build/scripts/get_dependent_and_buildable_pkgs.py",
+                  [
+                    "--pkg-base-dir",
+                    rebase_path("${pkg_base_dir}"),
+                    "--app-base-dir",
+                    rebase_path("${app_base_dir}"),
+                    "--pkg-type",
+                    "system",
+                  ],
+                  "list lines")
+        }
 
         foreach(used_pkg, used_system_pkgs) {
           configs += [ "${app_base_dir}${used_pkg}:config_for_ten_packages" ]

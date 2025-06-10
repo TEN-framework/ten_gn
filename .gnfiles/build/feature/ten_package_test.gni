@@ -88,7 +88,7 @@ template("ten_package_test") {
     # Setup relevant variables for the installed system package.
     if (invoker.package_kind == "extension") {
       pkg_base_dir = get_path_info(_target_name, "dir")
-      app_base_dir = "${pkg_base_dir}/../../../"
+      app_base_dir = "${pkg_base_dir}/.ten/app/"
 
       used_system_pkgs = exec_script(
               "//.gnfiles/build/scripts/get_dependent_and_buildable_pkgs.py",
