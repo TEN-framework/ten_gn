@@ -7,7 +7,6 @@ import sys
 import subprocess
 import shutil
 import platform
-from typing import List, Tuple
 import argparse
 
 
@@ -99,7 +98,8 @@ def determine_essential_paths(all_args: AllArgumentInfo) -> None:
             all_args.ninja_path, "win", arch_folder, "ninja.exe"
         )
     elif sys.platform == "darwin":
-        # The ninja and gn binaries for Mac support both x64 and arm64 architectures.
+        # The ninja and gn binaries for Mac support both x64 and arm64
+        # architectures.
         all_args.gn_path = os.path.join(all_args.gn_path, "mac", "gn")
         all_args.ninja_path = os.path.join(all_args.ninja_path, "mac", "ninja")
     else:
@@ -203,7 +203,7 @@ def run_and_redirect_output(cmd: str, output_file: str) -> None:
         subprocess.run(cmd, shell=True, stdout=f, stderr=f, check=True)
 
 
-def get_cmd_output(cmd: str, echo: bool = False) -> Tuple[int, str]:
+def get_cmd_output(cmd: str, echo: bool = False) -> tuple[int, str]:
     """Executes cmd in a shell and returns its status and output.
 
     Args:
@@ -397,7 +397,7 @@ def get_generator(main_args: AllArgumentInfo) -> str:
 
 
 def write_gn_args(
-    all_args: AllArgumentInfo, project_configs: List[str]
+    all_args: AllArgumentInfo, project_configs: list[str]
 ) -> None:
     """Writes GN arguments to a file named 'args.gn'.
 
