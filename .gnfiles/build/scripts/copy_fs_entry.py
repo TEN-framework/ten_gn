@@ -6,7 +6,6 @@
 #
 import os
 import argparse
-from typing import Optional
 from build.scripts import fs_utils, timestamp_proxy
 
 
@@ -16,7 +15,7 @@ class ArgumentInfo(argparse.Namespace):
 
         self.source: str
         self.destination: str
-        self.tg_timestamp_proxy_file: Optional[str] = None
+        self.tg_timestamp_proxy_file: str | None = None
         self.files_only: bool = False
 
 

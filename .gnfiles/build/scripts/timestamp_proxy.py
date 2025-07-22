@@ -5,7 +5,6 @@
 # Refer to the "LICENSE" file in the root directory for more information.
 #
 import os
-from typing import Optional
 from build.scripts import touch
 
 # A unique file extension is used to significantly reduce the likelihood of name
@@ -13,14 +12,14 @@ from build.scripts import touch
 TG_TIMESTAMP_PROXY_EXTENSION = ".tg_timestamp_proxy"
 
 
-def _gen_timestamp_proxy_path(path: Optional[str]) -> Optional[str]:
+def _gen_timestamp_proxy_path(path: str | None) -> str | None:
     if path:
         return path + TG_TIMESTAMP_PROXY_EXTENSION
     else:
         return None
 
 
-def touch_timestamp_proxy_file(path: Optional[str]) -> None:
+def touch_timestamp_proxy_file(path: str | None) -> None:
     """
     A timestamp file is typically one of a target's outputs, and the act of
     creating or updating the timestamp file ensures that GN, during the next
@@ -28,7 +27,7 @@ def touch_timestamp_proxy_file(path: Optional[str]) -> None:
     determines that the target does not need to be re-executed.
 
     Args:
-        path (Optional[str]): The timestamp file path.
+        path (str | None): The timestamp file path.
     """
     path = _gen_timestamp_proxy_path(path)
 
@@ -41,14 +40,14 @@ def touch_timestamp_proxy_file(path: Optional[str]) -> None:
             ) from e
 
 
-def remove_timestamp_proxy_file(path: Optional[str]) -> None:
+def remove_timestamp_proxy_file(path: str | None) -> None:
     """
     A timestamp file is typically one of a target's outputs, and deleting the
     timestamp file effectively causes GN to determine during the next build that
     the target associated with that timestamp file needs to be executed again.
 
     Args:
-        path (Optional[str]): The timestamp file path.
+        path (str | None): The timestamp file path.
     """
     path = _gen_timestamp_proxy_path(path)
 

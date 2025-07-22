@@ -6,7 +6,6 @@
 #
 import argparse
 import json
-from typing import Optional
 from dataclasses import dataclass, asdict
 
 
@@ -16,9 +15,9 @@ class ArgumentInfo(argparse.Namespace):
 
         self.input_string: str
         # The delimiter that separates the source and the target.
-        self.src_dest_delimiter: Optional[str] = None
+        self.src_dest_delimiter: str | None = None
         # The delimiter that separates the source_base.
-        self.src_base_delimiter: Optional[str] = None
+        self.src_base_delimiter: str | None = None
 
 
 @dataclass
@@ -30,12 +29,12 @@ class SrcDestInfo:
 
 def get_src_and_dest_file(
     input_string: str,
-    src_base_delimiter: Optional[str],
-    src_dest_delimiter: Optional[str],
+    src_base_delimiter: str | None,
+    src_dest_delimiter: str | None,
 ) -> SrcDestInfo:
-    source_base: Optional[str] = None
+    source_base: str | None = None
     source: str = ""
-    destination: Optional[str] = None
+    destination: str | None = None
 
     remaining_string = input_string
 
