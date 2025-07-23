@@ -5,7 +5,7 @@
 # Refer to the "LICENSE" file in the root directory for more information.
 #
 import argparse
-import json
+import json5
 import os
 
 
@@ -33,7 +33,7 @@ def load_manifest_dependencies(pkg_base_dir: str) -> list[dict]:
     manifest_path = os.path.join(pkg_base_dir, "manifest.json")
     if os.path.isfile(manifest_path):
         with open(manifest_path, "r", encoding="utf-8") as f:
-            manifest_data = json.load(f)
+            manifest_data = json5.load(f)
             if "dependencies" in manifest_data:
                 return manifest_data["dependencies"]
     return []
