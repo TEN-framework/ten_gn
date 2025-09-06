@@ -38,6 +38,8 @@ config("specific_c") {
   # inclusion of the C++ standard libraries, it is necessary to prevent the C++
   # linker from actively linking those C++ standard libraries.
   libs = []
+  ldflags = []
+
   if (is_clang) {
     # clang supports this wonderful command line option to exclude the standard
     # C++ libraries only.
