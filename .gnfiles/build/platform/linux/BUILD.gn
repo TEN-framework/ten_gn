@@ -31,6 +31,7 @@ config("specific") {
   configs = [ ":specific_cpp" ]
 }
 
+# Compilation configurations relevant to the C.
 config("specific_c") {
   # In order to enable one toolchain setting to build both C and C++ codes, the
   # linker set by the toolchain is the C++ linker (i.e., g++ or clang++), but
