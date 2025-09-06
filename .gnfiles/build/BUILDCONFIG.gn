@@ -62,7 +62,7 @@ if (is_win) {
 
 declare_args() {
   enable_cxx_rtti = false
-  enable_sanitizer = !is_win && is_debug
+  enable_sanitizer = is_linux && is_debug
 
   # Turn this on to have the compiler output extra timing information.
   enable_build_time_report = false
