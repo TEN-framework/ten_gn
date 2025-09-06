@@ -12,7 +12,7 @@ assert(is_mac)
 if (is_mac) {
   if (target_cpu == "x64") {
     xcode_target_sdk = "macosx"
-    xcode_target_platform = "x86_64-apple-macosx11"
+    xcode_target_platform = "x86_64-apple-macosx10.9"
   } else if (target_cpu == "arm64") {
     xcode_target_sdk = "macosx"
     xcode_target_platform = "arm64-apple-macosx11"
