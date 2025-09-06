@@ -26,21 +26,12 @@ config("specific") {
     ]
   }
 
-  asmflags = cflags
-
-  configs = [ ":specific_cpp" ]
-}
-
-# Compilation configurations relevant to the C.
-config("specific_c") {
   # In order to enable one toolchain setting to build both C and C++ codes, the
   # linker set by the toolchain is the C++ linker (i.e., g++ or clang++), but
   # the most basic compilation configuration of TEN world does not require the
   # inclusion of the C++ standard libraries, it is necessary to prevent the C++
   # linker from actively linking those C++ standard libraries.
   libs = []
-  ldflags = []
-
   if (is_clang) {
     # clang supports this wonderful command line option to exclude the standard
     # C++ libraries only.
@@ -60,6 +51,10 @@ config("specific_c") {
       "pthread",
     ]
   }
+
+  asmflags = cflags
+
+  configs = [ ":specific_cpp" ]
 }
 
 # Compilation configurations relevant to the C++.

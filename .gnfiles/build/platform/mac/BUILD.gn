@@ -44,13 +44,6 @@ config("specific") {
     cflags_objcc += [ "-fobjc-arc" ]
   }
 
-  configs = [ ":specific_cpp" ]
-}
-
-# Compilation configurations relevant to the C.
-config("specific_c") {
-  ldflags = []
-
   # Because the linker set by the toolchain is the C++ linker, but the most
   # basic compilation configuration does not require the inclusion of C++, it is
   # necessary to prevent the C++ linker from actively linking those C++ standard
@@ -60,6 +53,8 @@ config("specific_c") {
   } else {
     assert(0, "Only support clang in mac.")
   }
+
+  configs = [ ":specific_cpp" ]
 }
 
 # Compilation configurations relevant to the C++.
@@ -76,6 +71,13 @@ config("specific_cpp") {
     cflags_cc += [ "-fexceptions" ]
   } else {
     cflags_cc += [ "-fno-exceptions" ]
+  }
+
+  libs = []
+  if (is_clang) {
+    libs += [ "c++" ]
+  } else {
+    assert(0, "Only support clang in mac.")
   }
 }
 
