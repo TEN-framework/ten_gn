@@ -26,6 +26,12 @@ config("specific") {
     ]
   }
 
+  asmflags = cflags
+
+  configs = [ ":specific_cpp" ]
+}
+
+config("specific_c") {
   # In order to enable one toolchain setting to build both C and C++ codes, the
   # linker set by the toolchain is the C++ linker (i.e., g++ or clang++), but
   # the most basic compilation configuration of TEN world does not require the
@@ -51,10 +57,6 @@ config("specific") {
       "pthread",
     ]
   }
-
-  asmflags = cflags
-
-  configs = [ ":specific_cpp" ]
 }
 
 # Compilation configurations relevant to the C++.

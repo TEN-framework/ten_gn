@@ -63,6 +63,9 @@ config("specific") {
   configs = [ ":specific_cpp" ]
 }
 
+config("specific_c") {
+}
+
 # Compilation configurations relevant to the C++.
 config("specific_cpp") {
   cflags_cc = []

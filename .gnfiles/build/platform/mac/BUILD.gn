@@ -57,6 +57,19 @@ config("specific") {
   configs = [ ":specific_cpp" ]
 }
 
+# Basic Compilation Configuration.
+config("specific_c") {
+  # Because the linker set by the toolchain is the C++ linker, but the most
+  # basic compilation configuration does not require the inclusion of C++, it is
+  # necessary to prevent the C++ linker from actively linking those C++ standard
+  # libraries.
+  if (is_clang) {
+    ldflags += [ "-nostdlib++" ]
+  } else {
+    assert(0, "Only support clang in mac.")
+  }
+}
+
 # Compilation configurations relevant to the C++.
 config("specific_cpp") {
   cflags_cc = []
@@ -71,13 +84,6 @@ config("specific_cpp") {
     cflags_cc += [ "-fexceptions" ]
   } else {
     cflags_cc += [ "-fno-exceptions" ]
-  }
-
-  libs = []
-  if (is_clang) {
-    libs += [ "c++" ]
-  } else {
-    assert(0, "Only support clang in mac.")
   }
 }
 
