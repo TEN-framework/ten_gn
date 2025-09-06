@@ -44,21 +44,13 @@ config("specific") {
     cflags_objcc += [ "-fobjc-arc" ]
   }
 
-  # Because the linker set by the toolchain is the C++ linker, but the most
-  # basic compilation configuration does not require the inclusion of C++, it is
-  # necessary to prevent the C++ linker from actively linking those C++ standard
-  # libraries.
-  if (is_clang) {
-    ldflags += [ "-nostdlib++" ]
-  } else {
-    assert(0, "Only support clang in mac.")
-  }
-
   configs = [ ":specific_cpp" ]
 }
 
 # Compilation configurations relevant to the C.
 config("specific_c") {
+  ldflags = []
+
   # Because the linker set by the toolchain is the C++ linker, but the most
   # basic compilation configuration does not require the inclusion of C++, it is
   # necessary to prevent the C++ linker from actively linking those C++ standard
