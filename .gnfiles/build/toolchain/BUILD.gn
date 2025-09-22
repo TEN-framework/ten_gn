@@ -5,7 +5,7 @@
 # Refer to the "LICENSE" file in the root directory for more information.
 #
 pool("link_pool") {
-  depth = 1
+  depth = exec_script("//.gnfiles/build/scripts/get_cpu_count.py", [], "value")
 }
 
 pool("action_pool") {
