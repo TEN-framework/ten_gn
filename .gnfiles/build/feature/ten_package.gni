@@ -250,6 +250,11 @@ template("ten_package") {
         "${target_gen_dir}/${unique_copy_build_result_target_name}"
 
     action("${unique_copy_build_result_target_name}") {
+
+      if (enable_serialized_actions) {
+          pool = "//:serialized_action_pool"
+        }
+
       script = "//.gnfiles/build/scripts/copy_fs_entry.py"
 
       inputs = [ "${build_output_dir}/${real_build_output_file_name}" ]
@@ -312,6 +317,11 @@ template("ten_package") {
 
       # The only task handled by resources is copying.
       action("${unique_resource_action_target_name}") {
+
+        if (enable_serialized_actions) {
+            pool = "//:serialized_action_pool"
+          }
+
         script = "//.gnfiles/build/scripts/copy_fs_entry.py"
 
         resource_output_path =
