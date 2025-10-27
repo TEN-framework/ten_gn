@@ -63,12 +63,10 @@ if (is_win) {
 declare_args() {
   enable_cxx_rtti = false
 
-  # Rust AddressSanitizer is supported on Linux x64 and macOS x64/arm64. Refer
-  # to: https://doc.rust-lang.org/stable/unstable-book/compiler-flags/sanitizer.html#addresssanitizer
-  #
-  # rustc finds the asan runtime library in ~/.rustup/toolchains/<target_cpu>/
-  # lib/rustlib/<target_cpu>/lib/librustc-nightly_rt.asan.a
-  enable_sanitizer = is_debug && (is_mac || (is_linux && target_cpu == "x64"))
+  # Set to true to disable ASAN for all code (only used when collecting coverage)
+  # Implement this because ASAN conflicts with coverage instrumentation:
+  #   -Zprofile -Zsanitizer=address can't be used together.
+  disable_asan = false
 
   # Turn this on to have the compiler output extra timing information.
   enable_build_time_report = false
@@ -80,6 +78,18 @@ declare_args() {
   # If set true, all actions which pool is 'serialized_action_pool' will show
   # log serialized.
   enable_serialized_actions = false
+}
+
+# Separate declare_args to avoid circular dependency
+# enable_sanitizer depends on disable_asan
+declare_args() {
+  # Rust AddressSanitizer is supported on Linux x64 and macOS x64/arm64. Refer
+  # to: https://doc.rust-lang.org/stable/unstable-book/compiler-flags/sanitizer.html#addresssanitizer
+  #
+  # rustc finds the asan runtime library in ~/.rustup/toolchains/<target_cpu>/
+  # lib/rustlib/<target_cpu>/lib/librustc-nightly_rt.asan.a
+  # Disable ASAN when disable_asan is true (e.g., when collecting coverage)
+  enable_sanitizer = !disable_asan && is_debug && (is_mac || (is_linux && target_cpu == "x64"))
 }
 
 _default_toolchain = ""
