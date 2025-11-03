@@ -80,6 +80,9 @@ declare_args() {
   # If set true, all actions which pool is 'serialized_action_pool' will show
   # log serialized.
   enable_serialized_actions = false
+
+  # Turn this on to enable coverage instrumentation.
+  enable_coverage = false
 }
 
 _default_toolchain = ""
