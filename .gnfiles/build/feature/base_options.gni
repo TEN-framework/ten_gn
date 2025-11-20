@@ -23,7 +23,6 @@ if (target_os == "linux") {
 } else if (target_os == "win") {
   common_defines += [
     "OS_WINDOWS",
-    "TEN_RUNTIME_EXPORT",
     "WIN32_LEAN_AND_MEAN",
     "_CRT_SECURE_NO_WARNINGS",
   ]
