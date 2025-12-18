@@ -1,0 +1,72 @@
+#
+# Copyright © 2025 Agora
+# This file is part of TEN Framework, an open source project.
+# Licensed under the Apache License, Version 2.0, with certain conditions.
+# Refer to the "LICENSE" file in the root directory for more information.
+#
+import("//.gnfiles/build/toolchain/mingw/mingw.gni")
+
+# MinGW default libraries for Windows
+default_libs = [
+  "advapi32",
+  "comctl32",
+  "comdlg32",
+  "dbghelp",
+  "dnsapi",
+  "gdi32",
+  "iphlpapi",
+  "kernel32",
+  "msimg32",
+  "odbc32",
+  "odbccp32",
+  "ole32",
+  "oleaut32",
+  "psapi",
+  "shell32",
+  "shlwapi",
+  "user32",
+  "userenv",
+  "uuid",
+  "version",
+  "wininet",
+  "winmm",
+  "winspool",
+  "ws2_32",
+]
+
+declare_args() {
+  # MinGW toolchain prefix, e.g., "x86_64-w64-mingw32-" or ""
+  mingw_toolchain_prefix = ""
+}
+
+config("debug") {
+  defines = [ "_DEBUG" ]
+  cflags = [ "-g" ]
+  cflags_cc = []
+  ldflags = []
+  libs = default_libs
+}
+
+config("release") {
+  defines = [ "NDEBUG" ]
+  cflags = [
+    "-O2",
+    "-g",  # Keep debug info for backtraces even in release
+  ]
+  cflags_cc = []
+  ldflags = [
+    "-Wl,-O2",
+  ]
+  libs = default_libs
+}
+
+if (host_os == "win") {
+  mingw_toolchain("mingw") {
+    cc = "${mingw_toolchain_prefix}gcc"
+    cxx = "${mingw_toolchain_prefix}g++"
+    ar = "${mingw_toolchain_prefix}ar"
+    strip = "${mingw_toolchain_prefix}strip"
+    windres = "${mingw_toolchain_prefix}windres"
+    ld = cxx
+  }
+}

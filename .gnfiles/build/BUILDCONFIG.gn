@@ -45,6 +45,7 @@ if (target_cpu == "arm" || target_cpu == "arm64") {
 
 declare_args() {
   is_clang = true
+  is_mingw = false
   is_debug = false
 
   enable_cxx_exception = true
@@ -93,21 +94,37 @@ if (is_debug) {
 }
 
 if (is_win) {
-  _default_config = [
-    "//.gnfiles/build/platform/win:specific",
-    "//.gnfiles/build/toolchain/msvc:${_default_config_name}",
-  ]
+  if (is_mingw) {
+    # MinGW toolchain only supports GCC, not Clang
+    assert(!is_clang,
+           "MinGW toolchain does not support Clang. " +
+           "Please set is_clang=false when using is_mingw=true, " +
+           "or use MSVC/Clang-cl toolchain instead by setting is_mingw=false.")
 
-  if (host_os != "win") {
-    _default_config +=
-        [ "//.gnfiles/build/toolchain/clang_cross/$target_os:cross" ]
-
-    _default_toolchain = "//.gnfiles/build/toolchain/clang_cross/win:clang"
+    # MinGW toolchain configuration
+    _default_config = [
+      "//.gnfiles/build/platform/win:specific_mingw",
+      "//.gnfiles/build/toolchain/mingw:${_default_config_name}",
+    ]
+    _default_toolchain = "//.gnfiles/build/toolchain/mingw:mingw"
   } else {
-    if (is_clang) {
-      _default_toolchain = "//.gnfiles/build/platform/win:clang"
+    # MSVC/Clang toolchain configuration
+    _default_config = [
+      "//.gnfiles/build/platform/win:specific",
+      "//.gnfiles/build/toolchain/msvc:${_default_config_name}",
+    ]
+
+    if (host_os != "win") {
+      _default_config +=
+          [ "//.gnfiles/build/toolchain/clang_cross/$target_os:cross" ]
+
+      _default_toolchain = "//.gnfiles/build/toolchain/clang_cross/win:clang"
     } else {
-      _default_toolchain = "//.gnfiles/build/platform/win:msvc"
+      if (is_clang) {
+        _default_toolchain = "//.gnfiles/build/platform/win:clang"
+      } else {
+        _default_toolchain = "//.gnfiles/build/platform/win:msvc"
+      }
     }
   }
 } else if (is_mac) {
