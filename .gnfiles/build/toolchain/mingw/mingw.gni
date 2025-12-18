@@ -118,7 +118,7 @@ template("mingw_toolchain") {
     }
 
     tool("solink") {
-      soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.dll"
+      soname = "{{target_output_name}}{{output_extension}}"
       sofile = "{{output_dir}}/$soname"
       implibname = "{{target_output_name}}.dll.a"  # Import library for MinGW
       implibfile = "{{output_dir}}/$implibname"
@@ -131,7 +131,8 @@ template("mingw_toolchain") {
       description = "LD  {{output}}"
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
-      output_prefix = "lib"
+      # Don't use "lib" prefix on Windows to match Windows convention
+      output_prefix = ""
       restat = true
 
       # MinGW shared libraries produce both .dll and .dll.a files
@@ -156,7 +157,8 @@ template("mingw_toolchain") {
       description = "LD  {{output}}"
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
-      output_prefix = "lib"
+      # Don't use "lib" prefix on Windows to match Windows convention
+      output_prefix = ""
       restat = true
 
       outputs = [ sofile ]
