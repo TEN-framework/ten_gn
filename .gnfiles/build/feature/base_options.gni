@@ -41,7 +41,7 @@ common_defines += [ "TEN_LOG_DEF_LEVEL=TEN_LOG_DEBUG" ]
 
 common_cflags = []
 
-if (!is_win) {
+if (!is_win || (is_win && is_mingw)) {
   common_cflags += [
     "-pthread",
     "-Wall",
@@ -115,7 +115,7 @@ common_cflags_objcc = []
 
 common_ldflags = []
 
-if (!is_win) {
+if (!is_win || (is_win && is_mingw)) {
   common_ldflags += [ "-pthread" ]
 
   if (is_clang && is_debug) {
@@ -124,6 +124,13 @@ if (!is_win) {
 
   if (is_mac) {
     common_ldflags += [ "-w" ]
+  }
+
+  if (is_mingw) {
+    common_ldflags += [
+      "-static-libgcc",
+      "-static-libstdc++",
+    ]
   }
 } else {
   common_ldflags += [ "/ignore:4217" ]
