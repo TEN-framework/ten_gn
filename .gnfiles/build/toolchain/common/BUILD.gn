@@ -24,7 +24,7 @@ config("common") {
     root_gen_dir,
   ]
 
-  if (!is_win) {
+  if (!is_win || (is_win && is_mingw)) {
     cflags_cc = [ "-std=c++${cxx_standard}" ]
     cflags_objcc = [ "-std=c++${cxx_standard}" ]
     if (enable_c_extensions) {
