@@ -147,8 +147,10 @@ if (is_mac || is_linux) {
     "pthread",
     "dl",
   ]
-} else if (is_win) {
+} else if (is_win && !is_mingw) {
   common_libs += [ "bcrypt.lib" ]
+} else if (is_win && is_mingw) {
+  common_libs += [ "bcrypt" ]
 }
 
 # ===============
