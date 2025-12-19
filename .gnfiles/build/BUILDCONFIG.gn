@@ -55,7 +55,7 @@ declare_args() {
   c_standard = 11
 }
 
-if (is_win) {
+if (is_win && !is_mingw) {
   declare_args() {
     vs_version = 2019
   }
