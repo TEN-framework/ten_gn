@@ -1,32 +1,34 @@
 Open Source License
 
-The ten_gn is licensed pursuant to the Apache License v2.0, with the following
-additional conditions. You may reproduce, prepare Derivative Works of, publicly
-display, publicly perform, sublicense, distribute, or otherwise make available
-(together, "Deploy") the ten_gn, for commercial or non-commercial purposes,
-provided that you agree to abide by the terms below:
+The TEN Framework is licensed pursuant to the Apache License v2.0 (provided
+for your convenience below), with the following additional conditions. You may
+reproduce, prepare Derivative Works of, publicly display, publicly perform,
+sublicense, distribute, or otherwise make available (together, "Deploy") the
+TEN Framework, for commercial or non-commercial purposes, provided that you
+agree to abide by the terms below:
 
-    1. You may not (i) host the ten_gn or the Derivative Works on any End User
-       devices, including but not limited to any mobile terminal devices
-       or (ii) Deploy the ten_gn in a way that competes with Agora's
+    1. You may not (i) host the TEN Framework or the Derivative Works on any End
+       User devices, including but not limited to any mobile terminal devices
+       or (ii) Deploy the TEN Framework in a way that competes with Agora's
        offerings and/or that allows others to compete with Agora's offerings,
        including without limitation enabling any third party to develop or
        deploy Applications.
 
-    2. You may Deploy the ten_gn solely to create and enable deployment
+    2. You may Deploy the TEN Framework solely to create and enable deployment
        of your Application(s) solely for your benefit and the benefit of your
        direct End Users. If you prefer, you may include the following notice in
        the documentation of your Application(s): "Powered by TEN FRAMEWORK".
 
-    3. Derivative Works of the ten_gn remain subject to this Open Source
+    3. Derivative Works of the TEN Framework remain subject to this Open Source
        License.
 
     4. "End Users" shall mean the end-users of your Application(s) who access
-       the ten_gn solely to the extent necessary to access and use the
-       Application(s) you create or deploy using ten_gn.
+       the TEN Framework solely to the extent necessary to access and use the
+       Application(s) you create or deploy using TEN Framework.
 
     5. "Application(s)" shall mean your software programs designed or developed
-       by using the ten_gn or where deployment is enabled by the ten_gn.
+       by using the TEN Framework or where deployment is enabled by the TEN
+       Framework.
 
   Copyright © 2025 Agora
 
