@@ -120,22 +120,25 @@ template("mingw_toolchain") {
     tool("solink") {
       soname = "{{target_output_name}}{{output_extension}}"
       sofile = "{{output_dir}}/$soname"
-      implibname = "{{target_output_name}}.dll.a"  # Import library for MinGW
+      # Import library extension matches output extension for consistency
+      # e.g., .dll -> .dll.a, .pyd -> .pyd.a
+      implibname = "{{target_output_name}}{{output_extension}}.a"
       implibfile = "{{output_dir}}/$implibname"
       rspfile = sofile + ".rsp"
       pool = "//.gnfiles/build/toolchain:link_pool"
 
-      command = "cmd /c del /f /q \"{{output}}\" \"$implibfile\" 2>nul & $ld -shared {{ldflags}} -o \"{{output}}\" -Wl,--out-implib=\"$implibfile\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
+      command = "cmd /c del /f /q \"$sofile\" \"$implibfile\" 2>nul & $ld -shared {{ldflags}} -o \"$sofile\" -Wl,--out-implib=\"$implibfile\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
       rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
 
-      description = "LD  {{output}}"
+      description = "LD  $sofile $implibfile"
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
       # Don't use "lib" prefix on Windows to match Windows convention
       output_prefix = ""
       restat = true
 
-      # MinGW shared libraries produce both .dll and .dll.a files
+      # MinGW shared libraries produce both the library file and an import library
+      # The import library extension matches the output extension (e.g., .dll -> .dll.a, .pyd -> .pyd.a)
       outputs = [
         sofile,
         implibfile,
