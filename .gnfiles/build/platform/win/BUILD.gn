@@ -63,6 +63,45 @@ config("specific") {
   configs = [ ":specific_cpp" ]
 }
 
+# Basic Compilation Configuration for MinGW (GCC on Windows).
+config("specific_mingw") {
+  cflags = [
+    "-Wall",
+    "-Wextra",
+    "-Wno-unused-parameter",
+  ]
+
+  if (target_cpu == "x86") {
+    cflags += [ "-m32" ]
+  } else if (target_cpu == "x64") {
+    cflags += [ "-m64" ]
+  }
+
+  # MinGW specific defines
+  defines = [
+    "WIN32",
+    "_WIN32",
+    "__USE_MINGW_ANSI_STDIO=1",  # Use MinGW's ANSI-compliant printf
+  ]
+
+  if (use_unicode_char) {
+    defines += [
+      "_UNICODE",
+      "UNICODE",
+    ]
+  }
+
+  if (use_lean_and_mean_header) {
+    defines += [ "WIN32_LEAN_AND_MEAN" ]
+  }
+
+  # MinGW doesn't need Windows SDK setup, but we need to ensure
+  # proper exception handling
+  cflags_cc = []
+
+  configs = [ ":specific_cpp_mingw" ]
+}
+
 # Compilation configurations relevant to the C++.
 config("specific_cpp") {
   cflags_cc = []
@@ -71,7 +110,30 @@ config("specific_cpp") {
   }
 }
 
-if (host_os == "win") {
+# Compilation configurations for MinGW C++.
+config("specific_cpp_mingw") {
+  cflags_cc = []
+  ldflags = []
+
+  if (enable_cxx_rtti) {
+    cflags_cc += [ "-frtti" ]
+  } else {
+    cflags_cc += [ "-fno-rtti" ]
+  }
+
+  if (enable_cxx_exception) {
+    cflags_cc += [ "-fexceptions" ]
+  } else {
+    cflags_cc += [ "-fno-exceptions" ]
+  }
+
+  # Link against C++ standard library
+  libs = [ "stdc++" ]
+}
+
+
+# MSVC toolchain setup - only needed for MSVC, not MinGW
+if (host_os == "win" && !is_mingw) {
   environment_file = rebase_path("${root_out_dir}/environment.${target_cpu}")
   exec_script("//.gnfiles/build/scripts/setup_vs.py",
               [

@@ -24,7 +24,7 @@ config("common") {
     root_gen_dir,
   ]
 
-  if (!is_win) {
+  if (!is_win || (is_win && is_mingw)) {
     cflags_cc = [ "-std=c++${cxx_standard}" ]
     cflags_objcc = [ "-std=c++${cxx_standard}" ]
     if (enable_c_extensions) {
@@ -182,13 +182,15 @@ config("compiler_timing") {
       cflags += [ "-Xclang" ]
     }
     cflags += [ "-ftime-report" ]
-  } else if (is_win) {
+  } else if (is_win && !is_mingw) {
+    # MSVC-specific timing flag
     cflags += [
       # "Documented" here:
       # http://aras-p.info/blog/2017/10/23/Best-unknown-MSVC-flag-d2cgsummary/
       "/d2cgsummary",
     ]
   }
+  # MinGW uses GCC, which doesn't support /d2cgsummary
 }
 
 # Add default framework search path for ios and mac
