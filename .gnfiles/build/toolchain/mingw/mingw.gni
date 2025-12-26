@@ -127,7 +127,7 @@ template("mingw_toolchain") {
       rspfile = sofile + ".rsp"
       pool = "//.gnfiles/build/toolchain:link_pool"
 
-      command = "cmd /c del /f /q \"$sofile\" \"$implibfile\" 2>nul & $ld -shared {{ldflags}} -o \"$sofile\" -Wl,--out-implib=\"$implibfile\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
+      command = "cmd /c del /f /q \"$sofile\" \"$implibfile\" 2>nul & $ld -shared {{ldflags}} -Wl,--allow-multiple-definition -o \"$sofile\" -Wl,--out-implib=\"$implibfile\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
       rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
 
       description = "LD  $sofile $implibfile"
@@ -154,7 +154,7 @@ template("mingw_toolchain") {
       rspfile = sofile + ".rsp"
       pool = "//.gnfiles/build/toolchain:link_pool"
 
-      command = "cmd /c del /f /q \"{{output}}\" 2>nul & $ld -shared {{ldflags}} -o \"{{output}}\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
+      command = "cmd /c del /f /q \"{{output}}\" 2>nul & $ld -shared {{ldflags}} -Wl,--allow-multiple-definition -o \"{{output}}\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
       rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
 
       description = "LD  {{output}}"
@@ -175,7 +175,7 @@ template("mingw_toolchain") {
       default_output_extension = ".exe"
       default_output_dir = "{{root_out_dir}}"
 
-      command = "cmd /c del /f /q \"{{output}}\" 2>nul & $ld {{ldflags}} -o \"{{output}}\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
+      command = "cmd /c del /f /q \"{{output}}\" 2>nul & $ld {{ldflags}} -Wl,--allow-multiple-definition -o \"{{output}}\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
       rspfile_content = "-Wl,--no-whole-archive $inputs_section_prefix {{inputs}} {{solibs}} $libs_section_prefix {{libs}} $libs_section_postfix"
 
       description = "LD  {{output}}"
