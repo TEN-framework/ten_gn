@@ -45,7 +45,11 @@ config("debug") {
   defines = [ "_DEBUG" ]
   cflags = [ "-g" ]
   cflags_cc = []
-  ldflags = []
+  ldflags = [
+    "-static-libgcc",    # Static link libgcc (avoids libgcc_s_seh-1.dll)
+    "-static-libstdc++",  # Static link libstdc++ (avoids libstdc++-6.dll)
+    "-static",           # Static link MinGW runtime including pthread (avoids libwinpthread-1.dll)
+  ]
   libs = default_libs
 }
 
@@ -58,6 +62,9 @@ config("release") {
   cflags_cc = []
   ldflags = [
     "-Wl,-O2",
+    "-static-libgcc",
+    "-static-libstdc++",
+    "-static",
   ]
   libs = default_libs
 }

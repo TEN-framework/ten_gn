@@ -125,13 +125,6 @@ if (!is_win || (is_win && is_mingw)) {
   if (is_mac) {
     common_ldflags += [ "-w" ]
   }
-
-  if (is_mingw) {
-    common_ldflags += [
-      "-static-libgcc",
-      "-static-libstdc++",
-    ]
-  }
 } else {
   common_ldflags += [ "/ignore:4217" ]
 }
