@@ -1,0 +1,204 @@
+#
+# Copyright © 2025 Agora
+# This file is part of TEN Framework, an open source project.
+# Licensed under the Apache License, Version 2.0, with certain conditions.
+# Refer to the "LICENSE" file in the root directory for more information.
+#
+template("mingw_toolchain") {
+  cc = "gcc"
+  if (defined(invoker.cc)) {
+    cc = invoker.cc
+  }
+
+  cxx = "g++"
+  if (defined(invoker.cxx)) {
+    cxx = invoker.cxx
+  }
+
+  if (defined(invoker.ld)) {
+    ld = invoker.ld
+  } else {
+    ld = cxx
+  }
+
+  ar = "ar"
+  if (defined(invoker.ar)) {
+    ar = invoker.ar
+  }
+
+  strip = "strip"
+  if (defined(invoker.strip)) {
+    strip = invoker.strip
+  }
+
+  windres = "windres"
+  if (defined(invoker.windres)) {
+    windres = invoker.windres
+  }
+
+  if (defined(invoker.solink_libs_section_prefix)) {
+    solink_libs_section_prefix = invoker.solink_libs_section_prefix
+  } else {
+    solink_libs_section_prefix = ""
+  }
+
+  if (defined(invoker.solink_libs_section_postfix)) {
+    solink_libs_section_postfix = invoker.solink_libs_section_postfix
+  } else {
+    solink_libs_section_postfix = ""
+  }
+
+  if (defined(invoker.inputs_section_prefix)) {
+    inputs_section_prefix = invoker.inputs_section_prefix
+  } else {
+    inputs_section_prefix = ""
+  }
+
+  if (defined(invoker.libs_section_prefix)) {
+    libs_section_prefix = invoker.libs_section_prefix
+  } else {
+    libs_section_prefix = ""
+  }
+
+  if (defined(invoker.libs_section_postfix)) {
+    libs_section_postfix = invoker.libs_section_postfix
+  } else {
+    libs_section_postfix = ""
+  }
+
+  toolchain(target_name) {
+    object_subdir = "{{target_out_dir}}/{{label_name}}"
+    lib_switch = "-l"
+    lib_dir_switch = "-L"
+
+    tool("cc") {
+      depfile = "{{output}}.d"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "CC  {{output}}"
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
+    }
+
+    tool("cxx") {
+      depfile = "{{output}}.d"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "CC  {{output}}"
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
+    }
+
+    tool("asm") {
+      # For MinGW we can use the C compiler to compile assembly.
+      depfile = "{{output}}.d"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "CC  {{output}}"
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
+    }
+
+    tool("rc") {
+      # Windows resource compiler for MinGW
+      command = "$windres {{defines}} {{include_dirs}} -i {{source}} -o {{output}}"
+      description = "RC  {{output}}"
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
+    }
+
+    tool("alink") {
+      rspfile = "{{output}}.rsp"
+      rspfile_content = "{{inputs_newline}}"
+      _combine = rebase_path("//.gnfiles/build/scripts/combine.py")
+      command = "cmd /c del /f /q \"{{output}}\" 2>nul & $python_path $_combine $ar \"{{output}}\" @\"$rspfile\""
+      description = "AR  {{output}}"
+      outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
+
+      # Static libraries go in the target out directory by default.
+      default_output_dir = "{{target_out_dir}}"
+      default_output_extension = ".a"
+      output_prefix = "lib"
+    }
+
+    tool("solink") {
+      soname = "{{target_output_name}}{{output_extension}}"
+      sofile = "{{output_dir}}/$soname"
+      # Import library extension matches output extension for consistency
+      # e.g., .dll -> .dll.a, .pyd -> .pyd.a
+      implibname = "{{target_output_name}}{{output_extension}}.a"
+      implibfile = "{{output_dir}}/$implibname"
+      rspfile = sofile + ".rsp"
+      pool = "//.gnfiles/build/toolchain:link_pool"
+
+      command = "cmd /c del /f /q \"$sofile\" \"$implibfile\" 2>nul & $ld -shared {{ldflags}} -Wl,--allow-multiple-definition -o \"$sofile\" -Wl,--out-implib=\"$implibfile\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
+      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
+
+      description = "LD  $sofile $implibfile"
+      default_output_extension = ".dll"
+      default_output_dir = "{{root_out_dir}}"
+      # Don't use "lib" prefix on Windows to match Windows convention
+      output_prefix = ""
+      restat = true
+
+      # MinGW shared libraries produce both the library file and an import library
+      # The import library extension matches the output extension (e.g., .dll -> .dll.a, .pyd -> .pyd.a)
+      outputs = [
+        sofile,
+        implibfile,
+      ]
+      link_output = implibfile
+      depend_output = implibfile
+      runtime_outputs = [ sofile ]
+    }
+
+    tool("solink_module") {
+      soname = "{{target_output_name}}{{output_extension}}"  # e.g. "foo.dll"
+      sofile = "{{output_dir}}/$soname"
+      rspfile = sofile + ".rsp"
+      pool = "//.gnfiles/build/toolchain:link_pool"
+
+      command = "cmd /c del /f /q \"{{output}}\" 2>nul & $ld -shared {{ldflags}} -Wl,--allow-multiple-definition -o \"{{output}}\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
+      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
+
+      description = "LD  {{output}}"
+      default_output_extension = ".dll"
+      default_output_dir = "{{root_out_dir}}"
+      # Don't use "lib" prefix on Windows to match Windows convention
+      output_prefix = ""
+      restat = true
+
+      outputs = [ sofile ]
+    }
+
+    tool("link") {
+      exename = "{{target_output_name}}{{output_extension}}"
+      outfile = "{{output_dir}}/$exename"
+      rspfile = "$outfile.rsp"
+      pool = "//.gnfiles/build/toolchain:link_pool"
+      default_output_extension = ".exe"
+      default_output_dir = "{{root_out_dir}}"
+
+      command = "cmd /c del /f /q \"{{output}}\" 2>nul & $ld {{ldflags}} -Wl,--allow-multiple-definition -o \"{{output}}\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
+      rspfile_content = "-Wl,--no-whole-archive $inputs_section_prefix {{inputs}} {{solibs}} $libs_section_prefix {{libs}} $libs_section_postfix"
+
+      description = "LD  {{output}}"
+      outputs = [ outfile ]
+    }
+
+    tool("stamp") {
+      command = "cmd /c type nul > \"{{output}}\""
+      description = "GEN {{output}}"
+      pool = "//.gnfiles/build/toolchain:action_pool"
+    }
+
+    _copy_tool_wrapper =
+        rebase_path("//.gnfiles/build/scripts/copy_fs_entry.py", root_build_dir)
+    tool("copy") {
+      command = "$python_path $_copy_tool_wrapper --source {{source}} --destination {{output}}"
+      description = "CP  {{source}} {{output}}"
+      pool = "//.gnfiles/build/toolchain:action_pool"
+    }
+
+    tool("action") {
+      pool = "//.gnfiles/build/toolchain:action_pool"
+      description = "CC  {{output}}"
+    }
+  }
+}
