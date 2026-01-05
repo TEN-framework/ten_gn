@@ -48,7 +48,12 @@ config("debug") {
   ldflags = [
     "-static-libgcc",    # Static link libgcc (avoids libgcc_s_seh-1.dll)
     "-static-libstdc++",  # Static link libstdc++ (avoids libstdc++-6.dll)
-    "-static",           # Static link MinGW runtime including pthread (avoids libwinpthread-1.dll)
+    # Note: Do NOT use -static here, as it prevents linking with .dll.a import libraries
+    # (ten_runtime and ten_utils)
+    # Instead, use -Wl,-Bstatic/-Bdynamic to selectively static link pthread
+    "-Wl,-Bstatic",
+    "-lpthread",         # Static link pthread (avoids libwinpthread-1.dll)
+    "-Wl,-Bdynamic",     # Switch back to dynamic linking for other libraries
   ]
   libs = default_libs
 }
@@ -64,7 +69,11 @@ config("release") {
     "-Wl,-O2",
     "-static-libgcc",
     "-static-libstdc++",
-    "-static",
+    # Note: Do NOT use -static here, as it prevents linking with .dll.a import libraries
+    # Instead, use -Wl,-Bstatic/-Bdynamic to selectively static link pthread
+    "-Wl,-Bstatic",
+    "-lpthread",         # Static link pthread (avoids libwinpthread-1.dll)
+    "-Wl,-Bdynamic",     # Switch back to dynamic linking for other libraries
   ]
   libs = default_libs
 }
