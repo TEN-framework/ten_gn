@@ -120,10 +120,14 @@ template("mingw_toolchain") {
     tool("solink") {
       soname = "{{target_output_name}}{{output_extension}}"
       sofile = "{{output_dir}}/$soname"
+
       # Import library extension matches output extension for consistency
       # e.g., .dll -> .dll.a, .pyd -> .pyd.a
-      implibname = "{{target_output_name}}{{output_extension}}.a"
+      # MinGW import libraries require 'lib' prefix for GNU linker compatibility:
+      # GNU ld expects libfoo.dll.a when using -lfoo flag.
+      implibname = "lib{{target_output_name}}{{output_extension}}.a"
       implibfile = "{{output_dir}}/$implibname"
+
       rspfile = sofile + ".rsp"
       pool = "//.gnfiles/build/toolchain:link_pool"
 
