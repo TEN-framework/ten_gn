@@ -126,9 +126,6 @@ config("specific_cpp_mingw") {
   } else {
     cflags_cc += [ "-fno-exceptions" ]
   }
-
-  # Link against C++ standard library
-  libs = [ "stdc++" ]
 }
 
 
