@@ -131,8 +131,17 @@ template("mingw_toolchain") {
       rspfile = sofile + ".rsp"
       pool = "//.gnfiles/build/toolchain:link_pool"
 
+      # Note: Static linking flags (-Wl,-Bstatic -lgcc -lstdc++ -lpthread -Wl,-Bdynamic)
+      # are placed at the END of rspfile_content, after all other libs. Or else dynamic
+      # libs (e.g. simple_http_server_cpp.dll) that depends on libgcc_s_seh-1.dll and
+      # libstdc++-6.dll will not be correctly loaded.
+      # This is critical because GNU ld is a single-pass linker - libraries must
+      # appear AFTER the object files that reference them.
+      # Ref: https://sourceware.org/binutils/docs/ld/Options.html
+      # "...an undefined symbol in an object appearing later on the command line
+      # will not cause the linker to search the archive again."
       command = "cmd /c del /f /q \"$sofile\" \"$implibfile\" 2>nul & $ld -shared {{ldflags}} -Wl,--allow-multiple-definition -o \"$sofile\" -Wl,--out-implib=\"$implibfile\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
-      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
+      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix -Wl,-Bstatic -lgcc -lstdc++ -lpthread -Wl,-Bdynamic"
 
       description = "LD  $sofile $implibfile"
       default_output_extension = ".dll"
@@ -158,8 +167,9 @@ template("mingw_toolchain") {
       rspfile = sofile + ".rsp"
       pool = "//.gnfiles/build/toolchain:link_pool"
 
+      # Note: Static linking flags are placed at the END of rspfile_content.
       command = "cmd /c del /f /q \"{{output}}\" 2>nul & $ld -shared {{ldflags}} -Wl,--allow-multiple-definition -o \"{{output}}\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
-      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
+      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix -Wl,-Bstatic -lgcc -lstdc++ -lpthread -Wl,-Bdynamic"
 
       description = "LD  {{output}}"
       default_output_extension = ".dll"
@@ -179,8 +189,9 @@ template("mingw_toolchain") {
       default_output_extension = ".exe"
       default_output_dir = "{{root_out_dir}}"
 
+      # Note: Static linking flags are placed at the END of rspfile_content.
       command = "cmd /c del /f /q \"{{output}}\" 2>nul & $ld {{ldflags}} -Wl,--allow-multiple-definition -o \"{{output}}\" -Wl,--start-group @\"$rspfile\" -Wl,--end-group"
-      rspfile_content = "-Wl,--no-whole-archive $inputs_section_prefix {{inputs}} {{solibs}} $libs_section_prefix {{libs}} $libs_section_postfix"
+      rspfile_content = "-Wl,--no-whole-archive $inputs_section_prefix {{inputs}} {{solibs}} $libs_section_prefix {{libs}} $libs_section_postfix -Wl,-Bstatic -lgcc -lstdc++ -lpthread -Wl,-Bdynamic"
 
       description = "LD  {{output}}"
       outputs = [ outfile ]

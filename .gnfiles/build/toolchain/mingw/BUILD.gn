@@ -45,16 +45,16 @@ config("debug") {
   defines = [ "_DEBUG" ]
   cflags = [ "-g" ]
   cflags_cc = []
-  ldflags = [
-    # Note: Do NOT use -static here, as it prevents linking with .dll.a import libraries
-    # (ten_runtime and ten_utils)
-    # Instead, use -Wl,-Bstatic/-Bdynamic to selectively static link libraries
-    "-Wl,-Bstatic",
-    "-lgcc",             # Static link libgcc (avoids libgcc_s_seh-1.dll)
-    "-lstdc++",          # Static link libstdc++ (avoids libstdc++-6.dll)
-    "-lpthread",         # Static link pthread (avoids libwinpthread-1.dll)
-    "-Wl,-Bdynamic",     # Switch back to dynamic linking for other libraries
-  ]
+
+  # Note: Static linking of libgcc/libstdc++/pthread is handled in mingw.gni
+  # at the END of the link command (in rspfile_content) but not here. Because
+  # GNU ld is a single-pass linker and libraries must appear AFTER object files
+  # that reference them.
+  # Ref: https://sourceware.org/binutils/docs/ld/Options.html
+  # "...an undefined symbol in an object appearing later on the command line
+  # will not cause the linker to search the archive again."
+  ldflags = []
+
   libs = default_libs
 }
 
@@ -65,17 +65,15 @@ config("release") {
     "-g",  # Keep debug info for backtraces even in release
   ]
   cflags_cc = []
-  ldflags = [
-    "-Wl,-O2",
-    # Note: Do NOT use -static here, as it prevents linking with .dll.a import libraries
-    # (ten_runtime and ten_utils)
-    # Instead, use -Wl,-Bstatic/-Bdynamic to selectively static link libraries
-    "-Wl,-Bstatic",
-    "-lgcc",             # Static link libgcc (avoids libgcc_s_seh-1.dll)
-    "-lstdc++",          # Static link libstdc++ (avoids libstdc++-6.dll)
-    "-lpthread",         # Static link pthread (avoids libwinpthread-1.dll)
-    "-Wl,-Bdynamic",     # Switch back to dynamic linking for other libraries
-  ]
+
+  # Note: Static linking of libgcc/libstdc++/pthread is handled in mingw.gni
+  # at the END of the link command (in rspfile_content) but not here. Because
+  # GNU ld is a single-pass linker and libraries must appear AFTER object files
+  # that reference them.
+  # Ref: https://sourceware.org/binutils/docs/ld/Options.html
+  # "...an undefined symbol in an object appearing later on the command line
+  # will not cause the linker to search the archive again."
+  ldflags = [ "-Wl,-O2" ]
   libs = default_libs
 }
 
