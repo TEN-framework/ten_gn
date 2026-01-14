@@ -119,6 +119,11 @@ config("allow_undefined") {
       "dynamic_lookup",
     ]
   }
+  # Although MinGW linker (ld) does actually silently accept the
+  # --allow-shlib-undefined option, but it can't do anything on PE targets.
+  # On Windows platform we have to allow undefined symbols in another way.
+  # (e.g. change ten_runtime_go to static library)
+  # Ref: https://github.com/llvm/llvm-project/issues/55245
 }
 
 config("disallow_undefined") {
