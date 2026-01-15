@@ -34,6 +34,8 @@ def glob_file(
                     continue
 
             relative_path = os.path.relpath(v, dir_base) if dir_base else ""
+            # Normalize Windows path separators to forward slashes
+            relative_path = relative_path.replace("\\", "/")
 
             output.append(
                 {
