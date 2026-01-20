@@ -1,0 +1,56 @@
+#
+# Copyright © 2025 Agora
+# This file is part of TEN Framework, an open source project.
+# Licensed under the Apache License, Version 2.0, with certain conditions.
+# Refer to the "LICENSE" file in the root directory for more information.
+#
+
+# Template to copy MinGW runtime DLLs to the output directory.
+# This ensures that all executables and DLLs can find the required runtime libraries.
+#
+# Usage:
+#   copy_mingw_runtime_dlls("copy_dlls") {
+#     output_dir = "{{root_out_dir}}"
+#   }
+template("copy_mingw_runtime_dlls") {
+  assert(is_mingw, "This template is only for MinGW builds")
+
+  _target_name = target_name
+  _output_dir = root_out_dir
+  if (defined(invoker.output_dir)) {
+    _output_dir = invoker.output_dir
+  }
+
+  # Get MinGW bin directory from the compiler path
+  _mingw_bin_dir_script = "//.gnfiles/build/scripts/get_mingw_bin_dir.py"
+  _mingw_bin_dir = exec_script(_mingw_bin_dir_script, [ "g++" ], "trim string")
+  # print("_mingw_bin_dir:", _mingw_bin_dir)
+
+  # List of MinGW runtime DLLs to copy
+  _runtime_dlls = [
+    "libgcc_s_seh-1.dll",
+    "libstdc++-6.dll",
+    "libwinpthread-1.dll",
+  ]
+
+  # Create copy actions for each DLL
+  # TODO(nzh): Add logic to handle different MinGW configurations and versions
+  _copy_targets = []
+  foreach(_dll, _runtime_dlls) {
+    _copy_target = "${_target_name}_${_dll}"
+    _copy_targets += [ ":${_copy_target}" ]
+
+    copy(_copy_target) {
+      sources = [ "${_mingw_bin_dir}/${_dll}" ]
+      outputs = [ "${_output_dir}/${_dll}" ]
+    }
+  }
+
+  # Group all copy actions
+  group(_target_name) {
+    deps = _copy_targets
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+  }
+}
