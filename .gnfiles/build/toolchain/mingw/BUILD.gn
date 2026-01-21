@@ -45,14 +45,6 @@ config("debug") {
   defines = [ "_DEBUG" ]
   cflags = [ "-g" ]
   cflags_cc = []
-
-  # Note: Static linking of libgcc/libstdc++/pthread is handled in mingw.gni
-  # at the END of the link command (in rspfile_content) but not here. Because
-  # GNU ld is a single-pass linker and libraries must appear AFTER object files
-  # that reference them.
-  # Ref: https://sourceware.org/binutils/docs/ld/Options.html
-  # "...an undefined symbol in an object appearing later on the command line
-  # will not cause the linker to search the archive again."
   ldflags = []
 
   libs = default_libs
@@ -65,14 +57,6 @@ config("release") {
     "-g",  # Keep debug info for backtraces even in release
   ]
   cflags_cc = []
-
-  # Note: Static linking of libgcc/libstdc++/pthread is handled in mingw.gni
-  # at the END of the link command (in rspfile_content) but not here. Because
-  # GNU ld is a single-pass linker and libraries must appear AFTER object files
-  # that reference them.
-  # Ref: https://sourceware.org/binutils/docs/ld/Options.html
-  # "...an undefined symbol in an object appearing later on the command line
-  # will not cause the linker to search the archive again."
   ldflags = [ "-Wl,-O2" ]
   libs = default_libs
 }
