@@ -391,52 +391,6 @@ template("ten_package") {
     }
   }
 
-  # For MinGW builds, automatically copy runtime DLLs to C++ packages
-  # This applies to: C++ extensions, python_addon_loader, and system packages
-  if (is_win && is_mingw && should_set_package_output_root_dir) {
-    # Only copy DLLs for packages that build native code (not Python/Go/Node.js only packages)
-    _should_copy_mingw_dlls = false
-
-    if (invoker.package_kind == "app") {
-      # Apps always need DLLs in bin/ directory (where the executable is)
-      if (defined(invoker.enable_build) && invoker.enable_build) {
-        _should_copy_mingw_dlls = true
-      }
-    } else if (invoker.package_kind == "addon_loader") {
-      # Addon loaders always need DLLs if they have enable_build
-      if (defined(invoker.enable_build) && invoker.enable_build) {
-        _should_copy_mingw_dlls = true
-      }
-    } else if (invoker.package_kind == "system") {
-      # System packages always need DLLs (they package native libraries)
-      _should_copy_mingw_dlls = true
-    } else if (invoker.package_kind == "extension") {
-      # For extensions, only copy if they have C++ sources and enable_build
-      if (defined(invoker.enable_build) && invoker.enable_build &&
-          defined(invoker.sources) && invoker.sources != []) {
-        _should_copy_mingw_dlls = true
-      }
-    }
-
-    if (_should_copy_mingw_dlls) {
-      import("//.gnfiles/build/toolchain/mingw/copy_runtime_dlls.gni")
-
-      # Default to lib/ directory, but apps use bin/
-      _mingw_dll_output_dir = "${package_output_root_dir}/lib"
-      if (invoker.package_kind == "app") {
-        _mingw_dll_output_dir = "${package_output_root_dir}/bin"
-      }
-
-      _copy_mingw_dlls_target = "${_target_name}_copy_mingw_dlls"
-      copy_mingw_runtime_dlls(_copy_mingw_dlls_target) {
-        output_dir = _mingw_dll_output_dir
-      }
-
-      # Add to package_deps so it's included in the main group
-      package_deps += [ ":${_copy_mingw_dlls_target}" ]
-    }
-  }
-
   group(_target_name) {
     if (defined(public_deps)) {
       public_deps += package_deps
