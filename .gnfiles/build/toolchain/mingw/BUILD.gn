@@ -61,7 +61,11 @@ config("release") {
   libs = default_libs
 }
 
-if (host_os == "win") {
+# Only define the toolchain when:
+# 1. We're on Windows host
+# 2. We're not already inside the MinGW toolchain (to avoid duplicate definition)
+if (host_os == "win" &&
+    current_toolchain != "//.gnfiles/build/toolchain/mingw:mingw") {
   mingw_toolchain("mingw") {
     cc = "${mingw_toolchain_prefix}gcc"
     cxx = "${mingw_toolchain_prefix}g++"
