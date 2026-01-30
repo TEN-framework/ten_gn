@@ -55,6 +55,14 @@ declare_args() {
   c_standard = 11
 }
 
+declare_args() {
+  # Force MinGW toolchain for Go binding on Windows
+  # When set to true, Go binding will be compiled with MinGW even if is_mingw=false
+  # This is automatically enabled on Windows with non-MinGW compiler to ensure
+  # compatibility with MinGW-based Go applications and avoid MSVC-specific symbols
+  ten_force_mingw_for_go_binding = is_win && !is_mingw
+}
+
 if (is_win && !is_mingw) {
   declare_args() {
     vs_version = 2019
