@@ -61,17 +61,25 @@ config("release") {
   libs = default_libs
 }
 
-# Only define the toolchain when:
-# 1. We're on Windows host
-# 2. We're not already inside the MinGW toolchain (to avoid duplicate definition)
-if (host_os == "win" &&
-    current_toolchain != "//.gnfiles/build/toolchain/mingw:mingw") {
-  mingw_toolchain("mingw") {
-    cc = "${mingw_toolchain_prefix}gcc"
-    cxx = "${mingw_toolchain_prefix}g++"
-    ar = "${mingw_toolchain_prefix}ar"
-    strip = "${mingw_toolchain_prefix}strip"
-    windres = "${mingw_toolchain_prefix}windres"
-    ld = cxx
+# Define the MinGW toolchain on Windows.
+# The condition avoids duplicate definition (when MSVC build references MinGW
+# toolchain - in that case current_toolchain becomes mingw and we'd get a
+# duplicate.)
+if (host_os == "win") {
+  # Check if we're being evaluated from within MSVC toolchain context
+  # referencing MinGW - avoid duplicate in that specific case
+  _already_mingw =
+      current_toolchain != default_toolchain &&
+      current_toolchain == "//.gnfiles/build/toolchain/mingw:mingw"
+
+  if (!_already_mingw) {
+    mingw_toolchain("mingw") {
+      cc = "${mingw_toolchain_prefix}gcc"
+      cxx = "${mingw_toolchain_prefix}g++"
+      ar = "${mingw_toolchain_prefix}ar"
+      strip = "${mingw_toolchain_prefix}strip"
+      windres = "${mingw_toolchain_prefix}windres"
+      ld = cxx
+    }
   }
 }
