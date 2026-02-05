@@ -67,6 +67,13 @@ template("mingw_toolchain") {
   }
 
   toolchain(target_name) {
+    # Set toolchain_args to override is_mingw to true when this toolchain is used.
+    # This ensures that cflags and other settings use GCC-style flags instead of MSVC.
+    toolchain_args = {
+      is_mingw = true
+      is_clang = false
+    }
+
     object_subdir = "{{target_out_dir}}/{{label_name}}"
     lib_switch = "-l"
     lib_dir_switch = "-L"
