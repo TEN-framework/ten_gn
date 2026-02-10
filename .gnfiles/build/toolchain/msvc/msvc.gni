@@ -16,6 +16,15 @@ template("msvc_toolchain") {
   }
 
   toolchain(target_name) {
+    # Allow callers to override build arguments for this toolchain context.
+    # For example, msvc_force sets is_clang=false so that all targets built
+    # under it use MSVC-compatible flags.
+    if (defined(invoker.toolchain_args)) {
+      toolchain_args = {
+        forward_variables_from(invoker.toolchain_args, "*")
+      }
+    }
+
     lib_switch = ""
     lib_dir_switch = "/LIBPATH:"
 
