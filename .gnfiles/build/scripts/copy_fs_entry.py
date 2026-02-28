@@ -5,7 +5,20 @@
 # Refer to the "LICENSE" file in the root directory for more information.
 #
 import os
+import sys
 import argparse
+
+# Add the build directory to the Python path to allow importing build.scripts
+# The script is located at: <project>/.gnfiles/build/scripts/copy_fs_entry.py
+# We need to add <project>/.gnfiles/build to sys.path
+script_dir = os.path.dirname(os.path.abspath(__file__))  # .../scripts
+build_dir = os.path.dirname(script_dir)  # .../.gnfiles/build
+sys.path.insert(0, build_dir)
+
+# Also add the parent directory in case this is a symlink or relative import issue
+parent_build_dir = os.path.dirname(build_dir)  # .../.gnfiles
+sys.path.insert(0, parent_build_dir)
+
 from build.scripts import fs_utils, timestamp_proxy
 
 
