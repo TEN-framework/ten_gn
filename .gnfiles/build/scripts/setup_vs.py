@@ -11,7 +11,7 @@ import subprocess
 
 def GetVsPath(version: str) -> str:
     for letter in ["c:", "d:", "e:", "f:", "g:", "h:", "i:", "j:", "k:"]:
-        for vs_type in ["Community", "Professional", "Enterprise"]:
+        for vs_type in ["Community", "Professional", "Enterprise", "BuildTools"]:
             vs_path = (
                 letter
                 + "\\Program Files (x86)\\Microsoft Visual Studio"
