@@ -9,25 +9,49 @@ import sys
 import subprocess
 
 
-def GetVsPath(version: str) -> str:
-    for letter in ["c:", "d:", "e:", "f:", "g:", "h:", "i:", "j:", "k:"]:
-        for vs_type in ["Community", "Professional", "Enterprise", "BuildTools"]:
-            vs_path = (
-                letter
-                + "\\Program Files (x86)\\Microsoft Visual Studio"
-                + "\\{0}\\{1}".format(version, vs_type)
-            )
-            if os.path.exists(vs_path):
-                return vs_path
+SUPPORTED_VS_VERSIONS = ("2017", "2019", "2022", "2026")
 
-            vs_path = (
-                letter
-                + "\\Program Files\\Microsoft Visual Studio\\{0}\\{1}".format(
-                    version, vs_type
+
+def GetVsPathFromEnv() -> str | None:
+    # GitHub Windows runners may already have a newer Visual Studio initialized
+    # by msvc-dev-cmd (for example VS 18 / 2026). Prefer the configured install
+    # directory when present instead of re-detecting by a hard-coded year path.
+    vs_path = os.environ.get("VSINSTALLDIR")
+    if not vs_path:
+        return None
+
+    vs_path = os.path.normpath(vs_path.rstrip("\\/"))
+    if os.path.exists(vs_path):
+        return vs_path
+
+    return None
+
+
+def GetVsPath(version: str) -> str:
+    vs_path_from_env = GetVsPathFromEnv()
+    if vs_path_from_env:
+        return vs_path_from_env
+
+    version_dir_candidates = [version]
+    for letter in ["c:", "d:", "e:", "f:", "g:", "h:", "i:", "j:", "k:"]:
+        for version_dir in version_dir_candidates:
+            for vs_type in ["Community", "Professional", "Enterprise", "BuildTools"]:
+                vs_path = (
+                    letter
+                    + "\\Program Files (x86)\\Microsoft Visual Studio"
+                    + "\\{0}\\{1}".format(version_dir, vs_type)
                 )
-            )
-            if os.path.exists(vs_path):
-                return vs_path
+                if os.path.exists(vs_path):
+                    return vs_path
+
+                vs_path = (
+                    letter
+                    + "\\Program Files\\Microsoft Visual Studio\\{0}\\{1}".format(
+                        version_dir, vs_type
+                    )
+                )
+                if os.path.exists(vs_path):
+                    return vs_path
 
     raise RuntimeError("No Visual Studio {} detected".format(version))
 
@@ -40,8 +64,11 @@ def main(argc: int, argv: list[str]) -> int:
         )
 
     vs_version = argv[0]
-    if vs_version not in ["2015", "2017", "2019", "2022"]:
-        raise ValueError("Only support vs 2015, 2017, 2019 and 2022")
+    if vs_version not in SUPPORTED_VS_VERSIONS:
+        raise ValueError(
+            "Only support vs "
+            + ", ".join(sorted(SUPPORTED_VS_VERSIONS, key=int))
+        )
 
     host_cpu = argv[1]
     if host_cpu not in ["x86", "x64"]:
