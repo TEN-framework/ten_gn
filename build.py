@@ -192,17 +192,6 @@ def run_not_die(cmd: str, show_output: bool = True, echo: bool = False) -> None:
     run_cmd(cmd, show_output, echo)
 
 
-def run_and_redirect_output(cmd: str, output_file: str) -> None:
-    """Run a command and redirect its output to a file.
-
-    Args:
-        cmd: The command to run.
-        output_file: The file to which to redirect the output.
-    """
-    with open(output_file, "w", encoding="utf-8") as f:
-        subprocess.run(cmd, shell=True, stdout=f, stderr=f, check=True)
-
-
 def get_cmd_output(cmd: str, echo: bool = False) -> tuple[int, str]:
     """Executes cmd in a shell and returns its status and output.
 
@@ -425,13 +414,16 @@ def write_gn_args(
 
 
 def dump_gn_args(all_args: AllArgumentInfo) -> None:
+    args_gn_file = os.path.join(os.getcwd(), all_args.out_dir, "args.gn")
     tgn_args_file = os.path.join(os.getcwd(), all_args.out_dir, "tgn_args.txt")
 
-    cmd = "{0} args --list {1} --short".format(
-        all_args.gn_path,
-        all_args.out_dir,
-    )
-    run_and_redirect_output(cmd, tgn_args_file)
+    # The integration tests only need the explicit build arguments that tgn
+    # wrote into args.gn. Using "gn args --list" here is fragile on Windows:
+    # it re-evaluates GN files, which re-runs setup_vs.py and can overwrite
+    # tgn_args.txt with an environment/setup failure even after the original
+    # build succeeded. Copy args.gn directly so the artifact stays
+    # deterministic and machine-readable for the test parsers.
+    shutil.copyfile(args_gn_file, tgn_args_file)
 
 
 def prepare_gn_args(all_args: AllArgumentInfo) -> None:
