@@ -414,16 +414,39 @@ def write_gn_args(
 
 
 def dump_gn_args(all_args: AllArgumentInfo) -> None:
-    args_gn_file = os.path.join(os.getcwd(), all_args.out_dir, "args.gn")
+    """Write every effective GN argument as one ``name = value`` line."""
     tgn_args_file = os.path.join(os.getcwd(), all_args.out_dir, "tgn_args.txt")
 
-    # The integration tests only need the explicit build arguments that tgn
-    # wrote into args.gn. Using "gn args --list" here is fragile on Windows:
-    # it re-evaluates GN files, which re-runs setup_vs.py and can overwrite
-    # tgn_args.txt with an environment/setup failure even after the original
-    # build succeeded. Copy args.gn directly so the artifact stays
-    # deterministic and machine-readable for the test parsers.
-    shutil.copyfile(args_gn_file, tgn_args_file)
+    cmd = [
+        all_args.gn_path,
+        "args",
+        all_args.out_dir,
+        "--list",
+        "--short",
+    ]
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if result.returncode != 0:
+        if result.stdout:
+            print(result.stdout, end="", file=sys.stdout)
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
+        raise RuntimeError("Failed to query the effective GN arguments")
+
+    gn_args = result.stdout.rstrip("\r\n")
+    if not gn_args:
+        raise RuntimeError("GN returned no effective arguments")
+
+    # Capture the command output before opening the destination so a failed GN
+    # query cannot overwrite a previously valid tgn_args.txt with diagnostics.
+    with open(tgn_args_file, "w", encoding="utf-8", newline="\n") as file:
+        file.write(gn_args + "\n")
 
 
 def prepare_gn_args(all_args: AllArgumentInfo) -> None:
