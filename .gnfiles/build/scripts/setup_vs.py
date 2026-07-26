@@ -172,7 +172,10 @@ def WriteEnvironmentFile(
         for name, value in sorted(
             environment.items(), key=lambda item: item[0].upper()
         ):
-            out_file.write("{}={}".format(name, value).encode("UTF-8"))
+            output_name = "Path" if name.upper() == "PATH" else name
+            out_file.write(
+                "{}={}".format(output_name, value).encode("UTF-8")
+            )
             out_file.write(b"\0")
 
 
