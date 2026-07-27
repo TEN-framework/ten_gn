@@ -72,11 +72,10 @@ if (is_win && !is_mingw) {
 declare_args() {
   enable_cxx_rtti = false
 
-  # Rust AddressSanitizer is supported on Linux x64 and macOS x64/arm64. Refer
-  # to: https://doc.rust-lang.org/stable/unstable-book/compiler-flags/sanitizer.html#addresssanitizer
-  #
-  # rustc finds the asan runtime library in ~/.rustup/toolchains/<target_cpu>/
-  # lib/rustlib/<target_cpu>/lib/librustc-nightly_rt.asan.a
+  # Rust ASAN builds use the stable x86_64-unknown-linux-gnuasan target:
+  # https://doc.rust-lang.org/stable/rustc/platform-support/x86_64-unknown-linux-gnuasan.html
+  # Its runtime library is under the stable toolchain's rustlib directory at
+  # x86_64-unknown-linux-gnuasan/lib/librustc-stable_rt.asan.a.
   enable_sanitizer = is_debug && is_linux && target_cpu == "x64"
 
   # Turn this on to have the compiler output extra timing information.
