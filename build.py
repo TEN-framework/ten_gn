@@ -28,6 +28,7 @@ class MainArgumentInfo(argparse.Namespace):
         self.build_type: str
         self.out_dir: str
         self.out_file: str
+        self.jobs: int
 
 
 class AllArgumentInfo(MainArgumentInfo):
@@ -304,6 +305,15 @@ def parse_main_args(
         help="dump verbose outputs",
         action="store_true",
         default=False,
+    )
+    main_args_parser.add_argument(
+        "-j",
+        "--jobs",
+        dest="jobs",
+        help="number of parallel build jobs (passed to ninja -j)",
+        type=int,
+        required=False,
+        default=0,
     )
     main_args_parser.add_argument(
         "--out-dir",
@@ -630,9 +640,10 @@ def build_solution(all_args: AllArgumentInfo) -> None:
     """
 
     keeprsp_flag = "-d keeprsp" if all_args.build_type == "debug" else ""
+    jobs_flag = f"-j {all_args.jobs}" if all_args.jobs > 0 else ""
 
     cmd: str = (
-        f"{all_args.ninja_path} {keeprsp_flag} -C"
+        f"{all_args.ninja_path} {keeprsp_flag} {jobs_flag} -C"
         f" {all_args.out_dir} {'-v' if all_args.verbose else ''}"
         f" {all_args.build_target}"
     )
@@ -644,10 +655,11 @@ def explain_build_solution(all_args: AllArgumentInfo) -> None:
     provide an explanation of the build process."""
 
     keeprsp_flag = "-d keeprsp" if all_args.build_type == "debug" else ""
+    jobs_flag = f"-j {all_args.jobs}" if all_args.jobs > 0 else ""
 
     run_or_die(
         (
-            f"{all_args.ninja_path} {keeprsp_flag} -C"
+            f"{all_args.ninja_path} {keeprsp_flag} {jobs_flag} -C"
             f" {all_args.out_dir} {all_args.build_target} -d explain"
         ),
         echo=all_args.verbose,
