@@ -5,11 +5,86 @@
 # Refer to the "LICENSE" file in the root directory for more information.
 #
 import os
-import sys
+import shutil
 import subprocess
+import sys
+from collections.abc import Mapping
 
 
-SUPPORTED_VS_VERSIONS = ("2017", "2019", "2022", "2026")
+VS_VERSION_RANGES = {
+    "2017": "[15.0,16.0)",
+    "2019": "[16.0,17.0)",
+    "2022": "[17.0,18.0)",
+    "2026": "[18.0,19.0)",
+}
+VS_VERSION_MAJORS = {
+    "2017": "15",
+    "2019": "16",
+    "2022": "17",
+    "2026": "18",
+}
+SUPPORTED_VS_VERSIONS = tuple(VS_VERSION_RANGES)
+VS_REQUIRED_COMPONENT = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+
+
+def FindVsWhere() -> str | None:
+    vswhere = shutil.which("vswhere.exe") or shutil.which("vswhere")
+    if vswhere:
+        return vswhere
+
+    for env_name in ("ProgramFiles(x86)", "ProgramFiles"):
+        program_files = os.environ.get(env_name)
+        if not program_files:
+            continue
+
+        candidate = os.path.join(
+            program_files,
+            "Microsoft Visual Studio",
+            "Installer",
+            "vswhere.exe",
+        )
+        if os.path.isfile(candidate):
+            return candidate
+
+    return None
+
+
+def GetVsPathFromVsWhere(version: str) -> str | None:
+    vswhere = FindVsWhere()
+    if not vswhere:
+        return None
+
+    result = subprocess.run(
+        [
+            vswhere,
+            "-latest",
+            "-products",
+            "*",
+            "-version",
+            VS_VERSION_RANGES[version],
+            "-requires",
+            VS_REQUIRED_COMPONENT,
+            "-property",
+            "installationPath",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if result.returncode != 0:
+        return None
+
+    paths = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if not paths:
+        return None
+
+    vs_path = os.path.normpath(paths[0])
+    if os.path.isdir(vs_path):
+        return vs_path
+
+    return None
 
 
 def GetVsPathFromEnv() -> str | None:
@@ -28,6 +103,10 @@ def GetVsPathFromEnv() -> str | None:
 
 
 def GetVsPath(version: str) -> str:
+    vs_path_from_vswhere = GetVsPathFromVsWhere(version)
+    if vs_path_from_vswhere:
+        return vs_path_from_vswhere
+
     vs_path_from_env = GetVsPathFromEnv()
     if vs_path_from_env:
         return vs_path_from_env
@@ -54,6 +133,50 @@ def GetVsPath(version: str) -> str:
                     return vs_path
 
     raise RuntimeError("No Visual Studio {} detected".format(version))
+
+
+def IsVsEnvironmentReady(version: str, host_cpu: str, target_cpu: str) -> bool:
+    expected_major = VS_VERSION_MAJORS[version]
+    actual_version = os.environ.get("VisualStudioVersion", "")
+    if actual_version.split(".", maxsplit=1)[0] != expected_major:
+        return False
+
+    cpu_aliases = {"amd64": "x64"}
+    actual_host_cpu = cpu_aliases.get(
+        os.environ.get("VSCMD_ARG_HOST_ARCH", "").lower(),
+        os.environ.get("VSCMD_ARG_HOST_ARCH", "").lower(),
+    )
+    actual_target_cpu = cpu_aliases.get(
+        os.environ.get("VSCMD_ARG_TGT_ARCH", "").lower(),
+        os.environ.get("VSCMD_ARG_TGT_ARCH", "").lower(),
+    )
+    if actual_host_cpu != host_cpu or actual_target_cpu != target_cpu:
+        return False
+
+    required_variables = (
+        "VSINSTALLDIR",
+        "VCINSTALLDIR",
+        "VCToolsInstallDir",
+        "INCLUDE",
+        "LIB",
+        "LIBPATH",
+        "PATH",
+    )
+    return all(os.environ.get(name) for name in required_variables)
+
+
+def WriteEnvironmentFile(
+    output_file: str, environment: Mapping[str, str]
+) -> None:
+    with open(output_file, "wb") as out_file:
+        for name, value in sorted(
+            environment.items(), key=lambda item: item[0].upper()
+        ):
+            output_name = "Path" if name.upper() == "PATH" else name
+            out_file.write(
+                "{}={}".format(output_name, value).encode("UTF-8")
+            )
+            out_file.write(b"\0")
 
 
 def main(argc: int, argv: list[str]) -> int:
@@ -91,6 +214,10 @@ def main(argc: int, argv: list[str]) -> int:
 
     if os.path.exists(output_file):
         os.unlink(output_file)
+
+    if IsVsEnvironmentReady(vs_version, host_cpu, target_cpu):
+        WriteEnvironmentFile(output_file, os.environ)
+        return 0
 
     vs_path = GetVsPath(vs_version)
 
