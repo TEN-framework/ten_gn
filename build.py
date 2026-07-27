@@ -193,17 +193,6 @@ def run_not_die(cmd: str, show_output: bool = True, echo: bool = False) -> None:
     run_cmd(cmd, show_output, echo)
 
 
-def run_and_redirect_output(cmd: str, output_file: str) -> None:
-    """Run a command and redirect its output to a file.
-
-    Args:
-        cmd: The command to run.
-        output_file: The file to which to redirect the output.
-    """
-    with open(output_file, "w", encoding="utf-8") as f:
-        subprocess.run(cmd, shell=True, stdout=f, stderr=f, check=True)
-
-
 def get_cmd_output(cmd: str, echo: bool = False) -> tuple[int, str]:
     """Executes cmd in a shell and returns its status and output.
 
@@ -435,13 +424,39 @@ def write_gn_args(
 
 
 def dump_gn_args(all_args: AllArgumentInfo) -> None:
+    """Write every effective GN argument as one ``name = value`` line."""
     tgn_args_file = os.path.join(os.getcwd(), all_args.out_dir, "tgn_args.txt")
 
-    cmd = "{0} args --list {1} --short".format(
+    cmd = [
         all_args.gn_path,
+        "args",
         all_args.out_dir,
+        "--list",
+        "--short",
+    ]
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
     )
-    run_and_redirect_output(cmd, tgn_args_file)
+    if result.returncode != 0:
+        if result.stdout:
+            print(result.stdout, end="", file=sys.stdout)
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
+        raise RuntimeError("Failed to query the effective GN arguments")
+
+    gn_args = result.stdout.rstrip("\r\n")
+    if not gn_args:
+        raise RuntimeError("GN returned no effective arguments")
+
+    # Capture the command output before opening the destination so a failed GN
+    # query cannot overwrite a previously valid tgn_args.txt with diagnostics.
+    with open(tgn_args_file, "w", encoding="utf-8", newline="\n") as file:
+        file.write(gn_args + "\n")
 
 
 def prepare_gn_args(all_args: AllArgumentInfo) -> None:
